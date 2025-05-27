@@ -92,77 +92,9 @@
             <p class="text-lg text-blue-600">Estudo de Caso: BACEN vs. Receita Federal (Foco em Divulgação)</p>
         </header>
 
-        <section id="intro" class="card mb-12">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-3">Introdução à Análise</h2>
-            <p class="text-gray-700 leading-relaxed mb-2">
-                Este infográfico detalha a comparação dos processos de autorização governamental, usando a Receita Federal (RFB) como referência e o Banco Central (BACEN) como estudo. O foco é identificar padrões, comparar lead times e projetar a conclusão do processo do BACEN, com ênfase na data de "Divulgação" (análoga ao envio da SGP/DIPRO ao SOF, um marco importante de anúncio) e na "Publicação do Ato" final.
-            </p>
-            <p class="text-xs text-gray-500">Análise baseada em dados públicos de tramitação, fluxograma de aprovação e informações sobre o processo RFB (anúncio em ~26-27/Set quando DIPRO encaminhou ao SOF; data de referência para SGP->SOF: 03/Out/2024). Contagens a partir de 27 de Maio de 2025.</p>
-        </section>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
-            <section id="rfb-process" class="card">
-                <h2 class="text-2xl font-semibold text-blue-700 mb-4">O Processo de Referência: Receita Federal (RFB)</h2>
-                <p class="text-gray-600 mb-2">Processo RFB (18220.000423/2024-86):</p>
-                <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
-                    <li>"Divulgação" (SGP/DIPRO → SOF): ~03/Out/2024</li>
-                    <li>Publicação do Ato (Decreto): 19/Dez/2024</li>
-                    <li>Intervalo Divulgação → Publicação: ~77 dias</li>
-                </ul>
-                <div class="mb-6">
-                    <h3 class="text-xl font-medium text-blue-600 mb-3">Fluxo Simplificado RFB:</h3>
-                    <div class="flowchart-container">
-                        <div class="flowchart-step rfb">Autuação e Trâmites Iniciais</div>
-                        <div class="flowchart-arrow">↓</div>
-                        <div class="flowchart-step rfb">Análise Técnica Principal (SGP/DICOP)</div>
-                        <div class="flowchart-arrow">↓</div>
-                        <div class="flowchart-step rfb"><strong>"Divulgação" (Envio SGP → SOF)</strong></div>
-                        <div class="flowchart-arrow">↓</div>
-                        <div class="flowchart-step rfb">Análise Orçamentária (MPO) & Jurídica (CONJUR)</div>
-                        <div class="flowchart-arrow">↓</div>
-                        <div class="flowchart-step rfb">Trâmites Finais e Publicação do Ato</div>
-                    </div>
-                </div>
-            </section>
-
-            <section id="bacen-process" class="card">
-                <h2 class="text-2xl font-semibold text-emerald-700 mb-4">O Processo em Análise: BACEN</h2>
-                <p class="text-gray-600 mb-4">Processo BACEN (18600.045452/2025-83) com notável agilidade inicial. Atualmente na SGP/MGI.</p>
-                 <div class="mb-6">
-                    <h3 class="text-xl font-medium text-emerald-600 mb-3">Fluxo Previsto BACEN:</h3>
-                    <div class="flowchart-container">
-                        <div class="flowchart-step bacen">Autuação e Trâmites Iniciais (Concluído: 1 dia!)</div>
-                        <div class="flowchart-arrow text-emerald-500">↓</div>
-                        <div class="flowchart-step bacen">Análise Técnica Principal (SGP/DICOP) (Em Andamento)</div>
-                        <div class="flowchart-arrow text-emerald-500">↓</div>
-                        <div class="flowchart-step bacen"><strong>"Divulgação" (Envio SGP → SOF) (Previsto)</strong></div>
-                        <div class="flowchart-arrow text-emerald-500">↓</div>
-                        <div class="flowchart-step bacen">Análise Orçamentária (MPO) & Jurídica (CONJUR) (Previsto)</div>
-                        <div class="flowchart-arrow text-emerald-500">↓</div>
-                        <div class="flowchart-step bacen">Trâmites Finais e Publicação do Ato (Previsto)</div>
-                    </div>
-                </div>
-                 <div>
-                    <h3 class="text-xl font-medium text-emerald-600 mb-3">Lead Time Inicial (BACEN):</h3>
-                     <div class="stage-bar-container">
-                        <span class="stage-label">Autuação → SGP:</span>
-                        <div class="stage-bar bacen-bar-color" style="width: 5%;">1 dia</div>
-                    </div>
-                </div>
-            </section>
-        </div>
-
-        <section id="leadtime-comparison-chart" class="card mb-12">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-4">Comparativo de Agilidade Inicial: Chegada à SGP</h2>
-            <p class="text-gray-600 mb-4">A diferença no tempo para alcançar a principal etapa de análise técnica na SGP é um indicador chave.</p>
-            <div class="chart-container relative w-full max-w-2xl mx-auto h-72 md:h-80">
-                <canvas id="initialPhaseChart"></canvas>
-            </div>
-        </section>
-
         <section id="bacen-projections" class="mb-12">
             <h2 class="text-3xl font-bold text-center text-blue-700 mb-6">Projeções de Autorização para o BACEN</h2>
-            <p class="text-center text-gray-600 mb-8">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final).</p>
+            <p class="text-center text-gray-600 mb-8">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final). Contagens a partir de 27 de Maio de 2025.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="card border-l-4 border-emerald-500">
                     <h3 class="text-xl font-semibold text-emerald-600 mb-1">Cenário Otimista</h3>
@@ -226,10 +158,78 @@
             </div>
         </section>
 
+        <section id="intro" class="card mb-12">
+            <h2 class="text-2xl font-semibold text-blue-700 mb-3">Introdução à Análise Detalhada</h2>
+            <p class="text-gray-700 leading-relaxed mb-2">
+                A seguir, apresentamos uma análise comparativa dos processos de autorização governamental, utilizando o processo da Receita Federal (RFB) como referência e o processo em andamento do Banco Central (BACEN) como objeto de estudo. O objetivo é identificar padrões e comparar lead times em etapas chave.
+            </p>
+            <p class="text-xs text-gray-500">Análise baseada em dados públicos de tramitação, fluxograma de aprovação e informações sobre o processo RFB (anúncio em ~26-27/Set quando DIPRO encaminhou ao SOF; data de referência para SGP->SOF: 03/Out/2024).</p>
+        </section>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+            <section id="rfb-process" class="card">
+                <h2 class="text-2xl font-semibold text-blue-700 mb-4">O Processo de Referência: Receita Federal (RFB)</h2>
+                <p class="text-gray-600 mb-2">Processo RFB (18220.000423/2024-86):</p>
+                <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1">
+                    <li>"Divulgação" (SGP/DIPRO → SOF): ~03/Out/2024</li>
+                    <li>Publicação do Ato (Decreto): 19/Dez/2024</li>
+                    <li>Intervalo Divulgação → Publicação: ~77 dias</li>
+                </ul>
+                <div class="mb-6">
+                    <h3 class="text-xl font-medium text-blue-600 mb-3">Fluxo Simplificado RFB:</h3>
+                    <div class="flowchart-container">
+                        <div class="flowchart-step rfb">Autuação e Trâmites Iniciais</div>
+                        <div class="flowchart-arrow">↓</div>
+                        <div class="flowchart-step rfb">Análise Técnica Principal (SGP/DICOP)</div>
+                        <div class="flowchart-arrow">↓</div>
+                        <div class="flowchart-step rfb"><strong>"Divulgação" (Envio SGP → SOF)</strong></div>
+                        <div class="flowchart-arrow">↓</div>
+                        <div class="flowchart-step rfb">Análise Orçamentária (MPO) & Jurídica (CONJUR)</div>
+                        <div class="flowchart-arrow">↓</div>
+                        <div class="flowchart-step rfb">Trâmites Finais e Publicação do Ato</div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="bacen-process-details" class="card">
+                <h2 class="text-2xl font-semibold text-emerald-700 mb-4">O Processo em Análise: BACEN</h2>
+                <p class="text-gray-600 mb-4">Processo BACEN (18600.045452/2025-83) com notável agilidade inicial. Atualmente na SGP/MGI.</p>
+                 <div class="mb-6">
+                    <h3 class="text-xl font-medium text-emerald-600 mb-3">Fluxo Previsto BACEN:</h3>
+                    <div class="flowchart-container">
+                        <div class="flowchart-step bacen">Autuação e Trâmites Iniciais (Concluído: 1 dia!)</div>
+                        <div class="flowchart-arrow text-emerald-500">↓</div>
+                        <div class="flowchart-step bacen">Análise Técnica Principal (SGP/DICOP) (Em Andamento)</div>
+                        <div class="flowchart-arrow text-emerald-500">↓</div>
+                        <div class="flowchart-step bacen"><strong>"Divulgação" (Envio SGP → SOF) (Previsto)</strong></div>
+                        <div class="flowchart-arrow text-emerald-500">↓</div>
+                        <div class="flowchart-step bacen">Análise Orçamentária (MPO) & Jurídica (CONJUR) (Previsto)</div>
+                        <div class="flowchart-arrow text-emerald-500">↓</div>
+                        <div class="flowchart-step bacen">Trâmites Finais e Publicação do Ato (Previsto)</div>
+                    </div>
+                </div>
+                 <div>
+                    <h3 class="text-xl font-medium text-emerald-600 mb-3">Lead Time Inicial (BACEN):</h3>
+                     <div class="stage-bar-container">
+                        <span class="stage-label">Autuação → SGP:</span>
+                        <div class="stage-bar bacen-bar-color" style="width: 5%;">1 dia</div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <section id="leadtime-comparison-chart" class="card mb-12">
+            <h2 class="text-2xl font-semibold text-blue-700 mb-4">Comparativo de Agilidade Inicial: Chegada à SGP</h2>
+            <p class="text-gray-600 mb-4">A diferença no tempo para alcançar a principal etapa de análise técnica na SGP é um indicador chave.</p>
+            <div class="chart-container relative w-full max-w-2xl mx-auto h-72 md:h-80">
+                <canvas id="initialPhaseChart"></canvas>
+            </div>
+        </section>
+
         <section id="conclusion" class="card text-center">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-3">Conclusão</h2>
+            <h2 class="text-2xl font-semibold text-blue-700 mb-3">Conclusão da Análise</h2>
             <p class="text-gray-700 leading-relaxed">
-                Com intervalos mais curtos entre "Divulgação" e "Publicação" para o BACEN, o cenário otimista aponta para "Divulgação" em 29/Maio e "Publicação" em 18/Junho. O realista sugere "Divulgação" em 05/Junho e publicação em 05/Julho. O pessimista projeta "Divulgação" para 12/Junho e publicação em 27/Julho. Estes prazos refletem uma expectativa de maior eficiência do BACEN em todas as etapas finais.
+                Com os ajustes e a inversão da ordem, as projeções de "Divulgação" e "Publicação" para o BACEN são apresentadas inicialmente. O cenário otimista aponta para "Divulgação" em 29/Maio e "Publicação" em 18/Junho. O realista sugere "Divulgação" em 05/Junho e publicação em 05/Julho. O pessimista projeta "Divulgação" para 12/Junho e publicação em 27/Julho. Estes prazos refletem uma expectativa de maior eficiência do BACEN em todas as etapas finais, detalhadas na análise subsequente.
             </p>
         </section>
     </div>

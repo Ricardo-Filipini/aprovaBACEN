@@ -6,7 +6,7 @@
     <title>Infográfico: Análise de Processos de Autorização (BACEN vs. RFB)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
             font-family: 'Inter', sans-serif;
@@ -61,22 +61,48 @@
             align-items: center;
             justify-content: center;
         }
-        .main-countdown-timer {
-            font-size: 1.5rem; /* 24px */
-            font-weight: 700;
-            margin-bottom: 0.5rem; /* Space before secondary */
-        }
-        .secondary-countdown-timer {
-            font-size: 0.9rem; /* Smaller font */
-            font-weight: 500;
-            color: #4B5563; /* Gray-600 */
-        }
-        .timer-segment span { display: block; }
-        .main-timer-value { font-size: 1.25rem; }
-        .secondary-timer-value { font-size: 0.8rem; }
-        .timer-label { font-size: 0.75rem; text-transform: uppercase; color: #6B7280; }
-        .secondary-timer-label { font-size: 0.65rem; }
 
+        /* Destaque para Contagens Regressivas */
+        .main-countdown-timer {
+            font-family: 'Inter', sans-serif;
+            font-weight: 800; /* Extra-bold */
+            margin-bottom: 0.75rem; 
+            padding: 0.5rem 0;
+        }
+        .main-countdown-timer .timer-segment {
+            padding: 0.5rem 0.3rem; /* Mais padding interno */
+        }
+        .main-timer-value {
+            font-size: 2.25rem; /* Aumentado - 36px */
+            line-height: 1.1;
+            display: block;
+        }
+        .main-countdown-timer .timer-label {
+            font-size: 0.8rem; /* Aumentado */
+            text-transform: uppercase;
+            color: #4B5563; /* Gray-600 */
+            font-weight: 500;
+        }
+
+        .secondary-countdown-timer {
+            font-weight: 600; /* Semi-bold */
+            color: #374151; /* Gray-700 */
+            margin-top: 0.25rem;
+        }
+         .secondary-countdown-timer .timer-segment {
+            padding: 0.2rem 0.2rem;
+        }
+        .secondary-timer-value {
+            font-size: 1rem; /* Aumentado - 16px */
+            display: block;
+        }
+        .secondary-countdown-timer .timer-label {
+            font-size: 0.7rem; /* Aumentado */
+            text-transform: uppercase;
+            color: #6B7280; /* Gray-500 */
+            font-weight: 400;
+        }
+        /* Fim do Destaque */
 
         .stage-bar-container { display: flex; align-items: center; margin-bottom: 0.5rem; }
         .stage-label { font-size: 0.875rem; width: 150px; flex-shrink: 0; }
@@ -93,66 +119,66 @@
         </header>
 
         <section id="bacen-projections" class="mb-12">
-            <h2 class="text-3xl font-bold text-center text-blue-700 mb-6">Projeções de Autorização para o BACEN</h2>
-            <p class="text-center text-gray-600 mb-8">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final). Contagens a partir de 27 de Maio de 2025.</p>
+            <h2 class="text-3xl font-bold text-center text-blue-700 mb-4">Projeções de Autorização para o BACEN</h2>
+            <p class="text-center text-gray-600 mb-10">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final). Contagens a partir de 27 de Maio de 2025.</p>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="card border-l-4 border-emerald-500">
-                    <h3 class="text-xl font-semibold text-emerald-600 mb-1">Cenário Otimista</h3>
-                    <p class="text-gray-500 text-sm mb-1">"Divulgação" Prevista: <span id="opt-divulg-date-text" class="font-medium"></span></p>
-                    <div id="countdown-optimistic-divulg" class="main-countdown-timer text-emerald-500 flex justify-around">
-                        <div class="timer-segment text-center"><span id="opt-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="opt-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="opt-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="opt-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+                <div class="card border-l-4 border-emerald-500 text-center">
+                    <h3 class="text-xl font-semibold text-emerald-700 mb-2">Cenário Otimista</h3>
+                    <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="opt-divulg-date-text" class="font-medium text-emerald-600"></span></p>
+                    <div id="countdown-optimistic-divulg" class="main-countdown-timer text-emerald-600 flex justify-around">
+                        <div class="timer-segment"><span id="opt-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="opt-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="opt-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="opt-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-2 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Otimista): ~20 dias.</p>
-                    <hr class="my-2">
-                    <p class="text-gray-500 text-xs mb-1">Publicação do Ato: <span id="opt-pub-date-text" class="font-medium"></span></p>
+                    <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Otimista): ~20 dias.</p>
+                    <hr class="my-3">
+                    <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="opt-pub-date-text" class="font-medium"></span></p>
                     <div id="countdown-optimistic-pub" class="secondary-countdown-timer flex justify-around">
-                        <div class="timer-segment text-center"><span id="opt-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="opt-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="opt-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="opt-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+                        <div class="timer-segment"><span id="opt-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="opt-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="opt-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="opt-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
                     </div>
                 </div>
 
-                <div class="card border-l-4 border-blue-500">
-                    <h3 class="text-xl font-semibold text-blue-600 mb-1">Cenário Realista</h3>
-                    <p class="text-gray-500 text-sm mb-1">"Divulgação" Prevista: <span id="real-divulg-date-text" class="font-medium"></span></p>
-                    <div id="countdown-realistic-divulg" class="main-countdown-timer text-blue-500 flex justify-around">
-                        <div class="timer-segment text-center"><span id="real-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="real-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="real-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="real-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+                <div class="card border-l-4 border-blue-500 text-center">
+                    <h3 class="text-xl font-semibold text-blue-700 mb-2">Cenário Realista</h3>
+                    <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="real-divulg-date-text" class="font-medium text-blue-600"></span></p>
+                    <div id="countdown-realistic-divulg" class="main-countdown-timer text-blue-600 flex justify-around">
+                        <div class="timer-segment"><span id="real-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="real-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="real-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="real-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
                     </div>
-                     <p class="text-xs text-gray-500 mb-2 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Realista): ~30 dias.</p>
-                    <hr class="my-2">
-                    <p class="text-gray-500 text-xs mb-1">Publicação do Ato: <span id="real-pub-date-text" class="font-medium"></span></p>
+                     <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Realista): ~30 dias.</p>
+                    <hr class="my-3">
+                    <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="real-pub-date-text" class="font-medium"></span></p>
                     <div id="countdown-realistic-pub" class="secondary-countdown-timer flex justify-around">
-                        <div class="timer-segment text-center"><span id="real-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="real-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="real-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="real-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+                        <div class="timer-segment"><span id="real-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="real-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="real-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="real-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
                     </div>
                 </div>
 
-                <div class="card border-l-4 border-amber-500">
-                    <h3 class="text-xl font-semibold text-amber-600 mb-1">Cenário Pessimista</h3>
-                    <p class="text-gray-500 text-sm mb-1">"Divulgação" Prevista: <span id="pess-divulg-date-text" class="font-medium"></span></p>
-                    <div id="countdown-pessimistic-divulg" class="main-countdown-timer text-amber-500 flex justify-around">
-                        <div class="timer-segment text-center"><span id="pess-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="pess-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="pess-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="pess-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+                <div class="card border-l-4 border-amber-500 text-center">
+                    <h3 class="text-xl font-semibold text-amber-700 mb-2">Cenário Pessimista</h3>
+                    <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="pess-divulg-date-text" class="font-medium text-amber-600"></span></p>
+                    <div id="countdown-pessimistic-divulg" class="main-countdown-timer text-amber-600 flex justify-around">
+                        <div class="timer-segment"><span id="pess-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="pess-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="pess-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="pess-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-2 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Pessimista): ~45 dias.</p>
-                    <hr class="my-2">
-                    <p class="text-gray-500 text-xs mb-1">Publicação do Ato: <span id="pess-pub-date-text" class="font-medium"></span></p>
+                    <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Pessimista): ~45 dias.</p>
+                    <hr class="my-3">
+                    <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="pess-pub-date-text" class="font-medium"></span></p>
                     <div id="countdown-pessimistic-pub" class="secondary-countdown-timer flex justify-around">
-                        <div class="timer-segment text-center"><span id="pess-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
-                        <div class="timer-segment text-center"><span id="pess-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
-                        <div class="timer-segment text-center"><span id="pess-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
-                        <div class="timer-segment text-center"><span id="pess-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+                        <div class="timer-segment"><span id="pess-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                        <div class="timer-segment"><span id="pess-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                        <div class="timer-segment"><span id="pess-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                        <div class="timer-segment"><span id="pess-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
                     </div>
                 </div>
             </div>
@@ -331,11 +357,11 @@
             
             if (!elDays || !elHours || !elMinutes || !elSeconds) return;
 
-            const parentTimer = elDays.closest(`.${timerClass}`);
+            const parentTimer = elDays.closest(`.${timerClass.split(' ')[0]}`); // Use a primeira classe para encontrar o pai
 
             if (distance < 0) {
                 if (parentTimer) {
-                    parentTimer.innerHTML = `<span class='text-sm font-semibold ${timerClass === 'main-countdown-timer' ? 'text-red-500' : 'text-gray-500'}'>Prazo Atingido!</span>`;
+                    parentTimer.innerHTML = `<span class='text-lg font-semibold ${timerClass.includes('main-countdown-timer') ? 'text-red-500' : 'text-gray-500'}'>Prazo Atingido!</span>`;
                 }
                 return;
             }
@@ -347,22 +373,22 @@
         }
 
         setInterval(() => {
-            updateSingleCountdown(targetDatesDivulg.optimistic, 'opt-divulg-days', 'opt-divulg-hours', 'opt-divulg-minutes', 'opt-divulg-seconds', 'main-countdown-timer');
+            updateSingleCountdown(targetDatesDivulg.optimistic, 'opt-divulg-days', 'opt-divulg-hours', 'opt-divulg-minutes', 'opt-divulg-seconds', 'main-countdown-timer text-emerald-600');
             updateSingleCountdown(targetDatesPub.optimistic, 'opt-pub-days', 'opt-pub-hours', 'opt-pub-minutes', 'opt-pub-seconds', 'secondary-countdown-timer');
             
-            updateSingleCountdown(targetDatesDivulg.realistic, 'real-divulg-days', 'real-divulg-hours', 'real-divulg-minutes', 'real-divulg-seconds', 'main-countdown-timer');
+            updateSingleCountdown(targetDatesDivulg.realistic, 'real-divulg-days', 'real-divulg-hours', 'real-divulg-minutes', 'real-divulg-seconds', 'main-countdown-timer text-blue-600');
             updateSingleCountdown(targetDatesPub.realistic, 'real-pub-days', 'real-pub-hours', 'real-pub-minutes', 'real-pub-seconds', 'secondary-countdown-timer');
 
-            updateSingleCountdown(targetDatesDivulg.pessimistic, 'pess-divulg-days', 'pess-divulg-hours', 'pess-divulg-minutes', 'pess-divulg-seconds', 'main-countdown-timer');
+            updateSingleCountdown(targetDatesDivulg.pessimistic, 'pess-divulg-days', 'pess-divulg-hours', 'pess-divulg-minutes', 'pess-divulg-seconds', 'main-countdown-timer text-amber-600');
             updateSingleCountdown(targetDatesPub.pessimistic, 'pess-pub-days', 'pess-pub-hours', 'pess-pub-minutes', 'pess-pub-seconds', 'secondary-countdown-timer');
         }, 1000);
 
         // Initial calls
-        updateSingleCountdown(targetDatesDivulg.optimistic, 'opt-divulg-days', 'opt-divulg-hours', 'opt-divulg-minutes', 'opt-divulg-seconds', 'main-countdown-timer');
+        updateSingleCountdown(targetDatesDivulg.optimistic, 'opt-divulg-days', 'opt-divulg-hours', 'opt-divulg-minutes', 'opt-divulg-seconds', 'main-countdown-timer text-emerald-600');
         updateSingleCountdown(targetDatesPub.optimistic, 'opt-pub-days', 'opt-pub-hours', 'opt-pub-minutes', 'opt-pub-seconds', 'secondary-countdown-timer');
-        updateSingleCountdown(targetDatesDivulg.realistic, 'real-divulg-days', 'real-divulg-hours', 'real-divulg-minutes', 'real-divulg-seconds', 'main-countdown-timer');
+        updateSingleCountdown(targetDatesDivulg.realistic, 'real-divulg-days', 'real-divulg-hours', 'real-divulg-minutes', 'real-divulg-seconds', 'main-countdown-timer text-blue-600');
         updateSingleCountdown(targetDatesPub.realistic, 'real-pub-days', 'real-pub-hours', 'real-pub-minutes', 'real-pub-seconds', 'secondary-countdown-timer');
-        updateSingleCountdown(targetDatesDivulg.pessimistic, 'pess-divulg-days', 'pess-divulg-hours', 'pess-divulg-minutes', 'pess-divulg-seconds', 'main-countdown-timer');
+        updateSingleCountdown(targetDatesDivulg.pessimistic, 'pess-divulg-days', 'pess-divulg-hours', 'pess-divulg-minutes', 'pess-divulg-seconds', 'main-countdown-timer text-amber-600');
         updateSingleCountdown(targetDatesPub.pessimistic, 'pess-pub-days', 'pess-pub-hours', 'pess-pub-minutes', 'pess-pub-seconds', 'secondary-countdown-timer');
 
     </script>

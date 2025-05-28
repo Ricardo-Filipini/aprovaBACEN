@@ -5,8 +5,8 @@
 // Por segurança, em um ambiente de produção real, considere usar variáveis de ambiente do build ou um endpoint de backend para buscá-las.
 // Para este exemplo, vou assumir que elas serão inseridas diretamente ou via um script no HTML.
 
-const SUPABASE_URL = 'https://nrmkbqbuuytwiuweedfy.supabase.co'; // Será substituído no Index.html
-const SUPABASE_ANON_KEY = 'supabase_anon_key = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8'; // Será substituído no Index.html
+//const SUPABASE_URL = 'https://nrmkbqbuuytwiuweedfy.supabase.co'; // Será substituído no Index.html
+//const SUPABASE_ANON_KEY = 'supabase_anon_key = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8'; // Será substituído no Index.html
 
 let supabase; // Será inicializado após o carregamento das chaves
 let currentUser = { id: 0, nome: 'Anônimo', palpite: null }; // Usuário padrão anônimo

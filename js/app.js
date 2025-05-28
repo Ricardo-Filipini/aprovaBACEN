@@ -44,7 +44,10 @@ function updateUserPalpiteWidget() {
 }
 
 async function updateEnqueteSection() {
-    if (!enqueteOptionsArea) return;
+    if (!enqueteOptionsArea) {
+        console.error("Elemento enqueteOptionsArea não encontrado.");
+        return;
+    }
     enqueteOptionsArea.innerHTML = '';
     
     if (currentUser.id === 0) {
@@ -61,37 +64,33 @@ async function updateEnqueteSection() {
         document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
             button.addEventListener('click', toggleAuthModal);
         });
-        // loadEnqueteResults(); // Gráfico é carregado independentemente
-        return;
+        return; 
     }
     
-    (async () => { 
-        const userVote = await checkIfUserVoted(currentUser.id);
+    const userVote = await checkIfUserVoted(currentUser.id);
 
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
 
-        OPCOES_ENQUETE.forEach(opcao => { 
-            const button = document.createElement('button');
-            button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
-            if (opcao.value === userVote) {
-                button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
-            } else {
-                button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
-            }
-            button.title = opcao.label;
-            button.textContent = opcao.icon;
-            button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
-            optionsContainer.appendChild(button);
-        });
-        enqueteOptionsArea.appendChild(optionsContainer);
-        if (userVote) {
-             enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+    OPCOES_ENQUETE.forEach(opcao => { 
+        const button = document.createElement('button');
+        button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
+        if (opcao.value === userVote) {
+            button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
         } else {
-            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+            button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
         }
-        // loadEnqueteResults(); // Gráfico é carregado independentemente ou após voto
-    })();
+        button.title = opcao.label;
+        button.textContent = opcao.icon;
+        button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
+        optionsContainer.appendChild(button);
+    });
+    enqueteOptionsArea.appendChild(optionsContainer);
+    if (userVote) {
+            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+    } else {
+        enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+    }
 }
 
 function updateMuralSection() {
@@ -99,7 +98,7 @@ function updateMuralSection() {
         console.warn("Elemento muralPostArea não encontrado ao tentar atualizar.");
         return;
     }
-    muralPostArea.innerHTML = ''; // Limpa antes de recriar
+    muralPostArea.innerHTML = ''; 
     muralPostArea.innerHTML = `
         <textarea id="mural-message-input" rows="3" placeholder="Sua mensagem de otimismo (ou não)..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"></textarea>
         <button id="submit-mural-message-btn" class="mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md text-sm">Enviar Mensagem</button>
@@ -111,7 +110,6 @@ function updateMuralSection() {
 
 // --- Inicialização e Funções Principais ---
 document.addEventListener('DOMContentLoaded', () => {
-    // Atribuir elementos globais aqui, após o DOM estar carregado
     authWidgetContainer = document.getElementById('auth-widget-container');
     enqueteOptionsArea = document.getElementById('enquete-options-area');
     muralPostArea = document.getElementById('mural-post-area');
@@ -157,11 +155,12 @@ function initializeApp() {
     loadUsersForDropdown();
     
     loadPalpites(); 
-    loadEnqueteResults(); 
     loadMensagens(); 
     
+    // Atualizar UI após carregar dados essenciais
     updateUserPalpiteWidget(); 
-    updateEnqueteSection(); 
+    updateEnqueteSection(); // Renderiza os botões de voto
+    loadEnqueteResults(); // Carrega e renderiza o gráfico da enquete
     updateMuralSection(); 
 }
 
@@ -705,8 +704,10 @@ async function handleSubmitEnqueteVoto(voto) {
             alert('Voto registrado com sucesso!');
         }
         
-        updateEnqueteSection(); 
-        loadEnqueteResults(); 
+        // Chamar updateEnqueteSection primeiro para atualizar os botões
+        await updateEnqueteSection(); 
+        // Depois carregar e renderizar o gráfico
+        await loadEnqueteResults(); 
 
     } catch (error) {
         console.error('Erro ao registrar/atualizar voto na enquete:', error.message);
@@ -714,60 +715,17 @@ async function handleSubmitEnqueteVoto(voto) {
     }
 }
 
-async function updateEnqueteSection() {
-    if (!enqueteOptionsArea) return;
-    enqueteOptionsArea.innerHTML = '';
-    
-    if (currentUser.id === 0) {
-        enqueteOptionsArea.innerHTML = `
-            <p class="text-sm text-gray-600 mb-2 text-center">Identifique-se para votar:</p>
-            <div class="flex flex-wrap justify-center gap-2">
-                ${OPCOES_ENQUETE.map(opcao => `
-                    <button class="enquete-icon-button-disabled p-2 border rounded-lg text-2xl md:text-3xl cursor-pointer hover:bg-gray-200" title="${opcao.label}">
-                        ${opcao.icon}
-                    </button>
-                `).join('')}
-            </div>
-        `;
-        document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
-            button.addEventListener('click', toggleAuthModal);
-        });
-        // loadEnqueteResults(); // Gráfico é carregado independentemente
-        return; // Não prosseguir para carregar userVote se anônimo
-    }
-    
-    // Apenas para usuários logados
-    const userVote = await checkIfUserVoted(currentUser.id);
-
-    const optionsContainer = document.createElement('div');
-    optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
-
-    OPCOES_ENQUETE.forEach(opcao => { 
-        const button = document.createElement('button');
-        button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
-        if (opcao.value === userVote) {
-            button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
-        } else {
-            button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
-        }
-        button.title = opcao.label;
-        button.textContent = opcao.icon;
-        button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
-        optionsContainer.appendChild(button);
-    });
-    enqueteOptionsArea.appendChild(optionsContainer);
-    if (userVote) {
-            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
-    } else {
-        enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
-    }
-    // loadEnqueteResults(); // Gráfico é carregado em initializeApp e após voto
-}
-
-
 async function loadEnqueteResults() {
     if (!supabaseClient) { 
         console.warn("Supabase client não inicializado ao tentar carregar resultados da enquete.");
+        if (enqueteChartCanvas && !enqueteChartInstance) { // Se o gráfico não foi inicializado, mostra mensagem de erro
+             const ctx = enqueteChartCanvas.getContext('2d');
+             if(ctx) {
+                ctx.clearRect(0, 0, enqueteChartCanvas.width, enqueteChartCanvas.height);
+                ctx.font = "12px Inter"; ctx.fillStyle = "gray"; ctx.textAlign = "center";
+                ctx.fillText("Carregando dados da enquete...", enqueteChartCanvas.width / 2, enqueteChartCanvas.height / 2);
+             }
+        }
         return;
     }
     try {
@@ -787,7 +745,6 @@ async function loadEnqueteResults() {
                 resultados[v.voto].count++;
                 if (v.user && v.user.name) {
                      resultados[v.voto].users.push(v.user.name);
-                } else if (v.user_id === 0) {
                 }
             }
         });
@@ -809,14 +766,21 @@ async function loadEnqueteResults() {
 }
 
 function renderEnqueteChart(resultados) {
-    if (!enqueteChartCanvas) return;
+    if (!enqueteChartCanvas) {
+        console.warn("Canvas da enquete não encontrado para renderizar gráfico.");
+        return;
+    }
     const ctx = enqueteChartCanvas.getContext('2d');
-    if (!ctx) return;
-
+    if (!ctx) {
+        console.warn("Contexto 2D do canvas da enquete não pôde ser obtido.");
+        return;
+    }
 
     const labels = OPCOES_ENQUETE.map(opt => opt.label);
     const dataCounts = OPCOES_ENQUETE.map(opt => resultados[opt.value]?.count || 0);
     const totalVotes = dataCounts.reduce((sum, count) => sum + count, 0);
+
+    console.log("Dados para gráfico da enquete:", labels, dataCounts, totalVotes); // Log para depuração
 
     const chartData = {
         labels: labels,
@@ -879,7 +843,8 @@ function renderEnqueteChart(resultados) {
                 formatter: (value, ctx) => {
                     let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
                     let percentage = sum > 0 ? (value * 100 / sum).toFixed(0) + "%" : "0%"; 
-                    if (value === 0) return ''; 
+                    if (value === 0 && sum > 0) return ''; // Não mostrar se for 0, a menos que todos sejam 0
+                    if (sum === 0) return '0 (0%)'; // Se não houver votos
                     return `${value}\n(${percentage})`;
                 },
                 color: '#fff',
@@ -904,7 +869,6 @@ function renderEnqueteChart(resultados) {
         enqueteChartInstance.options.plugins.datalabels = chartOptions.plugins.datalabels;
         enqueteChartInstance.update();
     } else {
-        // Verifica se ChartDataLabels está registrado antes de usá-lo
         const pluginsToUse = typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : [];
         enqueteChartInstance = new Chart(ctx, {
             type: 'doughnut', 
@@ -951,11 +915,20 @@ async function handleMessageReaction(messageId, reactionType) {
     try {
         const { data: messageData, error: fetchError } = await supabaseClient
             .from('messages')
-            .select('likes, dislikes')
+            .select('likes, dislikes') // Assegure que estas colunas existem
             .eq('id', messageId)
             .single();
 
-        if (fetchError) throw fetchError;
+        if (fetchError) {
+            if (fetchError.message.includes("column") && (fetchError.message.includes("likes") || fetchError.message.includes("dislikes"))) {
+                 console.warn("Colunas 'likes' ou 'dislikes' não encontradas na tabela 'messages'. Reações não podem ser salvas.");
+                 alert("Funcionalidade de reação indisponível no momento (erro de configuração do banco de dados).");
+            } else {
+                throw fetchError;
+            }
+            return;
+        }
+
 
         let updateData = {};
         if (reactionType === 'like') {
@@ -975,9 +948,6 @@ async function handleMessageReaction(messageId, reactionType) {
 
     } catch (error) {
         console.error(`Erro ao registrar ${reactionType}:`, error.message);
-        // Não mostrar alerta para o usuário aqui, pois as colunas podem não existir.
-        // Apenas logar o erro.
-        // alert(`Falha ao registrar ${reactionType}.`);
     }
 }
 
@@ -993,12 +963,28 @@ async function handleSubmitMuralMessage() {
     }
 
     try {
-        // Assumindo que as colunas likes e dislikes existem e têm default 0
+        const insertPayload = { user_id: currentUser.id, message: messageText };
+        // Tenta adicionar likes/dislikes se as colunas existirem, caso contrário, omite.
+        // Isso é uma suposição; o ideal é que o schema seja consistente.
+        // Para este caso, vamos assumir que o usuário foi instruído a adicionar as colunas.
+        insertPayload.likes = 0;
+        insertPayload.dislikes = 0;
+
         const { error } = await supabaseClient 
             .from('messages') 
-            .insert([{ user_id: currentUser.id, message: messageText, likes: 0, dislikes: 0 }]); 
+            .insert([insertPayload]); 
         
-        if (error) throw error;
+        if (error) {
+            if (error.message.includes("column") && (error.message.includes("likes") || error.message.includes("dislikes"))) {
+                console.warn("Falha ao inserir mensagem com likes/dislikes. Tentando sem...");
+                const { error: fallbackError } = await supabaseClient
+                    .from('messages')
+                    .insert([{ user_id: currentUser.id, message: messageText }]);
+                if (fallbackError) throw fallbackError;
+            } else {
+                throw error;
+            }
+        }
 
         messageInput.value = ''; 
         alert('Mensagem enviada com sucesso!');
@@ -1006,7 +992,7 @@ async function handleSubmitMuralMessage() {
 
     } catch (error) {
         console.error('Erro ao enviar mensagem:', error.message);
-        alert('Falha ao enviar mensagem. Verifique se as colunas "likes" e "dislikes" existem na tabela "messages".');
+        alert('Falha ao enviar mensagem.');
     }
 }
 
@@ -1017,45 +1003,52 @@ async function loadMensagens() {
         return;
     }
     try {
-        // Tenta selecionar likes e dislikes. Se não existirem, a query pode falhar.
-        // Uma abordagem mais robusta seria verificar o schema ou tratar o erro específico.
+        let selectQuery = 'id, created_at, message, user_id, user(name)';
+        // Tenta adicionar likes/dislikes à query se as colunas provavelmente existem
+        // (Esta é uma heurística baseada no erro anterior, não ideal para produção)
+        if (! (await checkMissingReactionColumns()) ) {
+            selectQuery += ', likes, dislikes';
+        }
+
+
         const { data: messages, error } = await supabaseClient 
             .from('messages') 
-            .select(`
-                id,
-                created_at,
-                message, 
-                user_id,
-                likes, 
-                dislikes,
-                user (name) 
-            `) 
+            .select(selectQuery) 
             .order('created_at', { ascending: false })
             .limit(50); 
 
-        if (error) {
-            // Se o erro for sobre colunas 'likes'/'dislikes' não existirem, tenta buscar sem elas.
-            if (error.message.includes("column") && (error.message.includes("likes") || error.message.includes("dislikes"))) {
-                console.warn("Colunas 'likes' ou 'dislikes' não encontradas. Tentando buscar mensagens sem elas.");
-                const { data: messagesFallback, error: fallbackError } = await supabaseClient
-                    .from('messages')
-                    .select('id, created_at, message, user_id, user(name)')
-                    .order('created_at', { ascending: false })
-                    .limit(50);
-                if (fallbackError) throw fallbackError;
-                renderMensagens(messagesFallback, true); // Passa um flag para não renderizar reações
-            } else {
-                throw error;
-            }
-        } else {
-            renderMensagens(messages, false);
-        }
+        if (error) throw error;
+        renderMensagens(messages, await checkMissingReactionColumns());
+
 
     } catch (error) {
         console.error('Erro ao carregar mensagens:', error.message);
         if (muralMensagensDisplay) muralMensagensDisplay.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar mensagens do mural.</p>';
     }
 }
+
+// Função auxiliar para verificar (de forma simplificada) se as colunas de reação estão faltando
+// Isso é para evitar quebrar a UI se o usuário não adicionou as colunas.
+let missingReactionColsChecked = false;
+let areReactionColsMissing = false;
+async function checkMissingReactionColumns() {
+    if (missingReactionColsChecked) return areReactionColsMissing;
+    try {
+        // Tenta fazer uma query que falharia se as colunas não existissem
+        await supabaseClient.from('messages').select('id, likes, dislikes').limit(1);
+        areReactionColsMissing = false;
+    } catch (e) {
+        if (e.message.includes("column") && (e.message.includes("likes") || e.message.includes("dislikes"))) {
+            areReactionColsMissing = true;
+        } else {
+            // Outro erro, não relacionado a colunas faltando
+            areReactionColsMissing = false; 
+        }
+    }
+    missingReactionColsChecked = true;
+    return areReactionColsMissing;
+}
+
 
 function renderMensagens(messages, hideReactions = false) {
     if (!muralMensagensDisplay) return;

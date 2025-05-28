@@ -22,20 +22,3 @@
         </div>
     </div>
 </section>
-
-<script>
-    // Garante que os scripts da seção de mural sejam chamados.
-    if (typeof initMuralSection === 'function') {
-        initMuralSection();
-    } else {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof initMuralSection === 'function') {
-                initMuralSection();
-            }
-        });
-    }
-    // Ativa os ícones Lucide para esta seção
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script>

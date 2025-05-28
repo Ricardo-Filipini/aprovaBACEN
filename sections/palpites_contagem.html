@@ -31,20 +31,3 @@
         </div>
     </div>
 </section>
-
-<script>
-    // Garante que os scripts da seção de palpites sejam chamados.
-    if (typeof initPalpitesSection === 'function') {
-        initPalpitesSection();
-    } else {
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof initPalpitesSection === 'function') {
-                initPalpitesSection();
-            }
-        });
-    }
-    // Ativa os ícones Lucide para esta seção
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script>

@@ -46,23 +46,3 @@
         </a>
     </div>
 </div>
-
-<script>
-    // Garante que os scripts da seção de início sejam chamados se esta seção for carregada.
-    // A chamada principal está em main.js -> initializeSectionScripts
-    if (typeof initInicioSection === 'function') {
-        initInicioSection();
-    } else {
-        // Se initInicioSection não estiver definida ainda (caso de carregamento direto do arquivo sem o main.js ter rodado completamente)
-        // podemos adicionar um listener para garantir que rode após o DOM completo.
-        document.addEventListener('DOMContentLoaded', () => {
-            if (typeof initInicioSection === 'function') {
-                initInicioSection();
-            }
-        });
-    }
-    // Ativa os ícones Lucide para esta seção, caso não tenham sido ativados globalmente ainda
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-</script>

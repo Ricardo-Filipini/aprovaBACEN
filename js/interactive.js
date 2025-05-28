@@ -51,13 +51,13 @@ function setupUserIdentification() {
     const nomeUsuarioInput = document.getElementById('nome-usuario');
     const btnEntrar = document.getElementById('btn-entrar');
     const btnAnonimo = document.getElementById('btn-anonimo');
-    const userSection = document.getElementById('user-section-card'); // O card de identificação
-    const infographicContent = document.getElementById('infographic-main-content'); // Conteúdo principal que aparece após login
-    const welcomeMessage = document.getElementById('welcome-user-message'); // Onde mostrar "Bem-vindo NOME"
+    // Os elementos abaixo são buscados dentro de setCurrentUser e outras funções quando necessário,
+    // pois podem não existir no DOM global quando este script é inicialmente parseado.
 
-    if (!nomeUsuarioInput || !btnEntrar || !btnAnonimo || !userSection || !infographicContent || !welcomeMessage) {
-        console.warn("Elementos de identificação não encontrados na seção 'inicio.html'.");
-        return;
+    if (!nomeUsuarioInput || !btnEntrar || !btnAnonimo) {
+        // Esses são os botões/inputs que devem estar presentes quando initInicioSection é chamada.
+        console.warn("Elementos de input de nome ou botões de login/anônimo não encontrados na seção 'inicio.html'. A funcionalidade de identificação pode estar comprometida.");
+        return; // Retorna se os elementos essenciais para adicionar listeners não estiverem lá.
     }
 
     btnEntrar.addEventListener('click', handleUserLogin);
@@ -107,18 +107,52 @@ function setupUserIdentification() {
     }
 
     function setCurrentUser(user) {
+        console.log("setCurrentUser chamada com:", user);
         currentUser = user;
-        if (userSection) userSection.classList.add('hidden');
-        if (infographicContent) infographicContent.classList.remove('hidden');
-        if (welcomeMessage) welcomeMessage.innerHTML = `Bem-vindo(a), <span class="text-blue-600 font-semibold">${currentUser.nome}</span>!`;
+
+        const userSectionCard = document.getElementById('user-section-card');
+        const infographicMainContent = document.getElementById('infographic-main-content');
+        const welcomeUserMessage = document.getElementById('welcome-user-message'); // No header principal
+
+        if (userSectionCard) {
+            console.log("Escondendo user-section-card");
+            userSectionCard.classList.add('hidden');
+        } else {
+            console.warn("Elemento user-section-card não encontrado para esconder.");
+        }
+
+        if (infographicMainContent) {
+            console.log("Mostrando infographic-main-content");
+            infographicMainContent.classList.remove('hidden');
+        } else {
+            console.warn("Elemento infographic-main-content não encontrado para mostrar.");
+        }
         
-        // Após identificar, recarrega as seções que dependem do usuário, se já estiverem visíveis
-        // ou garante que os dados corretos sejam mostrados se o usuário navegar para elas.
-        // Isso é mais complexo em um SPA real. Por ora, vamos focar em ter o currentUser.
-        // Se uma seção já estiver carregada e precisar ser atualizada:
-        if (document.getElementById('palpite-date')) initPalpitesSection(); // Re-init para refletir palpite
-        if (document.getElementById('enquete-chart')) initEnqueteSection(); // Re-init para refletir votos
-        if (document.getElementById('mensagens-display')) initMuralSection(); // Re-init para destacar mensagens
+        // A mensagem de boas-vindas está no header principal, fora da content-area
+        // Devemos buscar no DOM principal.
+        const globalWelcomeMessage = window.parent.document.getElementById('welcome-user-message');
+        if (globalWelcomeMessage) {
+             globalWelcomeMessage.innerHTML = `Bem-vindo(a), <span class="text-blue-600 font-semibold">${currentUser.nome}</span>!`;
+        } else if (welcomeUserMessage) { // Fallback para o elemento dentro da seção, se existir
+            welcomeUserMessage.innerHTML = `Bem-vindo(a), <span class="text-blue-600 font-semibold">${currentUser.nome}</span>!`;
+        } else {
+            console.warn("Elemento welcome-user-message não encontrado no DOM global nem local.");
+        }
+        
+        // Atualiza as seções se elas já estiverem carregadas e visíveis
+        // Esta lógica pode precisar de refinamento dependendo de como as seções são gerenciadas
+        if (document.getElementById('palpite-date') && typeof initPalpitesSection === 'function') {
+            console.log("Re-inicializando seção de palpites após login.");
+            initPalpitesSection(); 
+        }
+        if (document.getElementById('enquete-chart') && typeof initEnqueteSection === 'function') {
+            console.log("Re-inicializando seção de enquete após login.");
+            initEnqueteSection(); 
+        }
+        if (document.getElementById('mensagens-display') && typeof initMuralSection === 'function') {
+            console.log("Re-inicializando seção de mural após login.");
+            initMuralSection(); 
+        }
     }
 }
 

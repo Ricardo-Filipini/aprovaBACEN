@@ -17,8 +17,44 @@
         initializeApp();
     });
 
-    function initializeApp() {
+    async function loadUserFromStorage() {
+        const lastUserId = localStorage.getItem('lastUserId');
+        const lastUserName = localStorage.getItem('lastUserName');
+
+        if (lastUserId && lastUserId !== "0" && lastUserName) {
+            console.log(`Tentando carregar usuário ${lastUserName} (ID: ${lastUserId}) do localStorage.`);
+            try {
+                const { data, error } = await supabaseClient
+                    .from('user')
+                    .select('id, name, palpite, voto')
+                    .eq('id', lastUserId)
+                    .single();
+
+                if (error) throw error;
+
+                if (data) {
+                    app.currentUser = { id: data.id, name: data.name, palpite: data.palpite, voto: data.voto };
+                    console.log('Usuário carregado do localStorage e Supabase:', app.currentUser);
+                } else {
+                    // Usuário não encontrado no Supabase, limpar localStorage
+                    localStorage.removeItem('lastUserId');
+                    localStorage.removeItem('lastUserName');
+                    console.warn(`Usuário com ID ${lastUserId} não encontrado no Supabase. Removendo do localStorage.`);
+                }
+            } catch (error) {
+                console.error('Erro ao buscar usuário do Supabase com base no localStorage:', error.message);
+                // Mantém o usuário anônimo padrão
+            }
+        } else {
+            console.log('Nenhum usuário salvo no localStorage ou usuário é Anônimo.');
+        }
+    }
+
+    async function initializeApp() {
         console.log('Aplicativo sendo inicializado por app.js...');
+
+        // 0. Tentar carregar usuário do localStorage
+        await loadUserFromStorage();
 
         // 1. Inicializar elementos da UI (de ui.js)
         if (app.initUIElements) {

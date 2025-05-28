@@ -245,6 +245,19 @@
                 list.appendChild(listItem);
             });
             app.uiElements.rankingDisplayArea.appendChild(list);
+
+            // Adicionar botão para dar/alterar palpite
+            const palpiteButtonContainer = document.createElement('div');
+            palpiteButtonContainer.className = 'mt-4 text-center'; // Adiciona margem e centraliza
+
+            const palpiteButton = document.createElement('button');
+            palpiteButton.id = 'ranking-palpite-btn';
+            palpiteButton.className = 'bg-indigo-500 hover:bg-indigo-600 text-white font-semibold py-2 px-4 rounded-md text-sm transition-colors duration-150 ease-in-out';
+            palpiteButton.textContent = 'Dar / Alterar meu Palpite';
+            palpiteButton.addEventListener('click', app.palpites.togglePalpiteModal);
+            
+            palpiteButtonContainer.appendChild(palpiteButton);
+            app.uiElements.rankingDisplayArea.appendChild(palpiteButtonContainer);
         },
 
         renderTop3Countdowns: function(top3PalpiteDates) {

@@ -250,6 +250,15 @@
             if (app.palpites && typeof app.palpites.loadPalpites === 'function') app.palpites.loadPalpites();
             if (app.mural && typeof app.mural.loadMensagens === 'function') app.mural.loadMensagens();
             // A enquete é atualizada por updateEnqueteSection e loadEnqueteResults (chamado por updateEnqueteSection)
+
+            // Salvar no localStorage ou remover se anônimo
+            if (app.currentUser && app.currentUser.id !== 0) {
+                localStorage.setItem('lastUserId', app.currentUser.id);
+                localStorage.setItem('lastUserName', app.currentUser.name);
+            } else {
+                localStorage.removeItem('lastUserId');
+                localStorage.removeItem('lastUserName');
+            }
         }
     };
 

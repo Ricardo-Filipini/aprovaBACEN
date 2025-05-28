@@ -3,13 +3,12 @@
 const SUPABASE_URL = "https://nrmkbqbuuytwiuweedfy.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8";
 
-let supabaseClient; // Renomeado para evitar conflito com o objeto global do SDK
-let currentUser = { id: 0, nome: 'Anônimo', palpite: null }; 
+let supabaseClient; 
+let currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
 
 document.addEventListener('DOMContentLoaded', () => {
-    // O objeto global do SDK é window.supabase
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
-        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Usar window.supabase e atribuir a supabaseClient
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); 
         console.log('Supabase client instance inicializada.');
         initializeApp();
     } else {
@@ -68,7 +67,7 @@ function setupAuthElements() {
 
     const userNameSpan = document.createElement('span');
     userNameSpan.id = 'auth-username';
-    userNameSpan.textContent = currentUser.nome;
+    userNameSpan.textContent = currentUser.name; // Corrigido: nome para name
 
     authButton.appendChild(userIcon);
     authButton.appendChild(userNameSpan);
@@ -131,9 +130,9 @@ function toggleAuthModal() {
 }
 
 async function loadUsersForDropdown() {
-    if (!supabaseClient) return; // Usar supabaseClient
+    if (!supabaseClient) return; 
     try {
-        const { data: users, error } = await supabaseClient.from('user').select('id, nome').order('nome', { ascending: true }); // Usar supabaseClient
+        const { data: users, error } = await supabaseClient.from('user').select('id, name').order('name', { ascending: true }); // Corrigido: nome para name
         if (error) throw error;
 
         const userSelect = document.getElementById('user-select');
@@ -151,7 +150,7 @@ async function loadUsersForDropdown() {
             if (user.id !== 0) { 
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = user.nome;
+                option.textContent = user.name; // Corrigido: nome para name
                 userSelect.appendChild(option);
             }
         });
@@ -175,10 +174,10 @@ async function handleLoginRegister() {
 
     if (newUserName) {
         try {
-            const { data: existingUser, error: checkError } = await supabaseClient // Usar supabaseClient
+            const { data: existingUser, error: checkError } = await supabaseClient 
                 .from('user')
-                .select('id, nome')
-                .eq('nome', newUserName)
+                .select('id, name') // Corrigido: nome para name
+                .eq('name', newUserName) // Corrigido: nome para name
                 .single();
 
             if (checkError && checkError.code !== 'PGRST116') { 
@@ -190,17 +189,17 @@ async function handleLoginRegister() {
                 return;
             }
 
-            const { data, error } = await supabaseClient // Usar supabaseClient
+            const { data, error } = await supabaseClient 
                 .from('user')
-                .insert([{ nome: newUserName }])
+                .insert([{ name: newUserName }]) // Corrigido: nome para name
                 .select()
                 .single();
             
             if (error) throw error;
 
             if (data) {
-                currentUser = { id: data.id, nome: data.nome, palpite: data.palpite };
-                alert(`Usuário ${data.nome} cadastrado com sucesso!`);
+                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; // Corrigido: nome para name
+                alert(`Usuário ${data.name} cadastrado com sucesso!`); // Corrigido: nome para name
             }
         } catch (error) {
             console.error('Erro ao registrar novo usuário:', error.message);
@@ -209,27 +208,27 @@ async function handleLoginRegister() {
         }
     } else if (selectedUserId) { 
         try {
-            const { data, error } = await supabaseClient // Usar supabaseClient
+            const { data, error } = await supabaseClient 
                 .from('user')
-                .select('id, nome, palpite')
+                .select('id, name, palpite') // Corrigido: nome para name
                 .eq('id', selectedUserId)
                 .single();
 
             if (error) throw error;
             if (data) {
-                currentUser = { id: data.id, nome: data.nome, palpite: data.palpite };
+                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; // Corrigido: nome para name
             } else if (selectedUserId === "0") { 
-                 currentUser = { id: 0, nome: 'Anônimo', palpite: null };
+                 currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
                  console.warn("Usuário anônimo (ID 0) não encontrado no banco. Usando default local.");
             }
         } catch (error) {
             console.error('Erro ao buscar usuário:', error.message);
-            currentUser = { id: 0, nome: 'Anônimo', palpite: null }; 
+            currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
         }
     }
 
     const authUsernameSpan = document.getElementById('auth-username');
-    if (authUsernameSpan) authUsernameSpan.textContent = currentUser.nome;
+    if (authUsernameSpan) authUsernameSpan.textContent = currentUser.name; // Corrigido: nome para name
     
     toggleAuthModal();
     console.log('Usuário atual:', currentUser);
@@ -347,7 +346,7 @@ async function handleSubmitPalpite() {
     const palpiteDate = palpiteDateInput.value; 
 
     try {
-        const { data, error } = await supabaseClient // Usar supabaseClient
+        const { data, error } = await supabaseClient 
             .from('user')
             .update({ palpite: palpiteDate })
             .eq('id', currentUser.id)
@@ -376,7 +375,7 @@ async function handleRemovePalpite() {
     }
 
     try {
-        const { data, error } = await supabaseClient // Usar supabaseClient
+        const { data, error } = await supabaseClient 
             .from('user')
             .update({ palpite: null })
             .eq('id', currentUser.id)
@@ -396,15 +395,15 @@ async function handleRemovePalpite() {
 }
 
 async function loadPalpites() {
-    if (!supabaseClient) { // Usar supabaseClient
+    if (!supabaseClient) { 
         console.warn("Supabase client não inicializado ao tentar carregar palpites.");
         if(rankingDisplayArea) rankingDisplayArea.innerHTML = '<p class="text-sm text-orange-500">Conexão com ranking indisponível.</p>';
         return;
     }
     try {
-        const { data: palpites, error } = await supabaseClient // Usar supabaseClient
+        const { data: palpites, error } = await supabaseClient 
             .from('user')
-            .select('id, nome, palpite')
+            .select('id, name, palpite') // Corrigido: nome para name
             .not('palpite', 'is', null) 
             .order('palpite', { ascending: true }); 
 
@@ -445,7 +444,7 @@ function renderRanking(palpites) {
 
         listItem.innerHTML = `
             <div>
-                <span class="font-semibold">${medal}${p.nome}</span>
+                <span class="font-semibold">${medal}${p.name}</span> <!-- Corrigido: nome para name -->
             </div>
             <span class="text-gray-700">${palpiteDate.toLocaleDateString('pt-BR')}</span>
         `;
@@ -459,7 +458,7 @@ function renderRanking(palpites) {
     rankingDisplayArea.appendChild(list);
 }
 
-const palpiteCountdownIntervals = {}; // Mover para escopo global ou de módulo se necessário
+const palpiteCountdownIntervals = {}; 
 
 function renderTop3Countdowns(top3Palpites) {
     if(!top3CountdownArea) return;
@@ -482,7 +481,7 @@ function renderTop3Countdowns(top3Palpites) {
         const countdownDiv = document.createElement('div');
         countdownDiv.className = 'mb-3 p-3 bg-orange-50 rounded-lg shadow';
         countdownDiv.innerHTML = `
-            <p class="text-sm font-medium text-orange-700">${index + 1}º: ${p.nome} (${palpiteDate.toLocaleDateString('pt-BR')})</p>
+            <p class="text-sm font-medium text-orange-700">${index + 1}º: ${p.name} (${palpiteDate.toLocaleDateString('pt-BR')})</p> <!-- Corrigido: nome para name -->
             <div id="countdown-top3-${p.id}" class="text-xs text-orange-600 flex flex-wrap justify-start gap-x-2 gap-y-1 mt-1">
                 <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-days" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Dias</span></div>
                 <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-hours" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Horas</span></div>
@@ -540,9 +539,9 @@ let enqueteChartInstance = null;
 const OPCOES_ENQUETE = ['Super Otimista', 'Otimista', 'Realista', 'Pessimista', 'Mar céu lar'];
 
 async function checkIfUserVoted(userId) {
-    if (!supabaseClient || userId === 0) return null; // Usar supabaseClient
+    if (!supabaseClient || userId === 0) return null; 
     try {
-        const { data, error } = await supabaseClient // Usar supabaseClient
+        const { data, error } = await supabaseClient 
             .from('enquete')
             .select('voto')
             .eq('user_id', userId)
@@ -580,7 +579,7 @@ async function handleSubmitEnqueteVoto() {
             }
         }
 
-        const { error } = await supabaseClient // Usar supabaseClient
+        const { error } = await supabaseClient 
             .from('enquete')
             .insert([{ user_id: currentUser.id, voto: voto }]); 
         
@@ -597,12 +596,12 @@ async function handleSubmitEnqueteVoto() {
 }
 
 async function loadEnqueteResults() {
-    if (!supabaseClient) { // Usar supabaseClient
+    if (!supabaseClient) { 
         console.warn("Supabase client não inicializado ao tentar carregar resultados da enquete.");
         return;
     }
     try {
-        const { data: votos, error } = await supabaseClient // Usar supabaseClient
+        const { data: votos, error } = await supabaseClient 
             .from('enquete')
             .select('voto, user_id'); 
 
@@ -704,9 +703,9 @@ async function handleSubmitMuralMessage() {
     }
 
     try {
-        const { error } = await supabaseClient // Usar supabaseClient
-            .from('message') 
-            .insert([{ user_id: currentUser.id, menssage: messageText }]); 
+        const { error } = await supabaseClient 
+            .from('messages') // Corrigido: message para messages
+            .insert([{ user_id: currentUser.id, message: messageText }]); // Corrigido: menssage para message
         
         if (error) throw error;
 
@@ -721,21 +720,21 @@ async function handleSubmitMuralMessage() {
 }
 
 async function loadMensagens() {
-    if (!supabaseClient) { // Usar supabaseClient
+    if (!supabaseClient) { 
         console.warn("Supabase client não inicializado ao tentar carregar mensagens.");
         if (muralMensagensDisplay) muralMensagensDisplay.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar mural.</p>';
         return;
     }
     try {
-        const { data: messages, error } = await supabaseClient // Usar supabaseClient
-            .from('message')
+        const { data: messages, error } = await supabaseClient 
+            .from('messages') // Corrigido: message para messages
             .select(`
                 id,
                 created_at,
-                menssage, 
+                message, 
                 user_id,
-                user (nome)
-            `)
+                user (name) 
+            `) // Corrigido: menssage para message, user(nome) para user(name)
             .order('created_at', { ascending: false })
             .limit(50); 
 
@@ -761,11 +760,11 @@ function renderMensagens(messages) {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'p-3 rounded-md shadow-sm text-sm';
         
-        const authorName = (msg.user && msg.user.nome) ? msg.user.nome : 'Anônimo';
+        const authorName = (msg.user && msg.user.name) ? msg.user.name : 'Anônimo'; // Corrigido: nome para name
         const messageDate = new Date(msg.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         messageDiv.innerHTML = `
-            <p class="break-words whitespace-pre-wrap">${msg.menssage}</p>
+            <p class="break-words whitespace-pre-wrap">${msg.message}</p> <!-- Corrigido: menssage para message -->
             <p class="text-xs text-gray-500 mt-1 text-right">
                 – <span class="font-medium">${authorName}</span> em ${messageDate}
             </p>

@@ -6,7 +6,121 @@ const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 let supabaseClient; 
 let currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
 
+// --- Declarações de Elementos Globais da UI ---
+let authWidgetContainer, enqueteOptionsArea, muralPostArea, rankingDisplayArea, top3CountdownArea, enqueteChartCanvas;
+let enqueteChartInstance = null;
+
+const OPCOES_ENQUETE = [
+    { label: 'Super Otimista', value: 'Super Otimista', icon: '😊' },
+    { label: 'Otimista', value: 'Otimista', icon: '🙂' },
+    { label: 'Realista', value: 'Realista', icon: '😐' },
+    { label: 'Pessimista', value: 'Pessimista', icon: '😟' },
+    { label: 'Mar céu lar', value: 'Mar céu lar', icon: '🌊' }
+];
+const palpiteCountdownIntervals = {}; 
+let muralMensagensDisplay;
+
+
+// --- Funções de Atualização da UI (Definidas antes de initializeApp) ---
+
+function updateUserPalpiteWidget() {
+    const palpiteWidget = document.getElementById('user-palpite-widget');
+    const palpiteDateDisplay = document.getElementById('user-palpite-date-display');
+
+    if (!palpiteWidget || !palpiteDateDisplay) return;
+
+    if (currentUser.id !== 0 && currentUser.palpite) {
+        const date = new Date(currentUser.palpite);
+        date.setUTCDate(date.getUTCDate() + 1);
+        palpiteDateDisplay.textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year:'2-digit' }); 
+        palpiteWidget.style.display = 'flex';
+    } else if (currentUser.id !== 0 && !currentUser.palpite) {
+        palpiteDateDisplay.textContent = 'Palpite?'; 
+        palpiteWidget.style.display = 'flex';
+    }
+    else {
+        palpiteWidget.style.display = 'none';
+    }
+}
+
+async function updateEnqueteSection() {
+    if (!enqueteOptionsArea) return;
+    enqueteOptionsArea.innerHTML = '';
+    
+    if (currentUser.id === 0) {
+        enqueteOptionsArea.innerHTML = `
+            <p class="text-sm text-gray-600 mb-2 text-center">Identifique-se para votar:</p>
+            <div class="flex flex-wrap justify-center gap-2">
+                ${OPCOES_ENQUETE.map(opcao => `
+                    <button class="enquete-icon-button-disabled p-2 border rounded-lg text-2xl md:text-3xl cursor-pointer hover:bg-gray-200" title="${opcao.label}">
+                        ${opcao.icon}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+        document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
+            button.addEventListener('click', toggleAuthModal);
+        });
+        // loadEnqueteResults(); // Gráfico é carregado independentemente
+        return;
+    }
+    
+    (async () => { 
+        const userVote = await checkIfUserVoted(currentUser.id);
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
+
+        OPCOES_ENQUETE.forEach(opcao => { 
+            const button = document.createElement('button');
+            button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
+            if (opcao.value === userVote) {
+                button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
+            } else {
+                button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
+            }
+            button.title = opcao.label;
+            button.textContent = opcao.icon;
+            button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
+            optionsContainer.appendChild(button);
+        });
+        enqueteOptionsArea.appendChild(optionsContainer);
+        if (userVote) {
+             enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+        } else {
+            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+        }
+        // loadEnqueteResults(); // Gráfico é carregado independentemente ou após voto
+    })();
+}
+
+function updateMuralSection() {
+    if (!muralPostArea) {
+        console.warn("Elemento muralPostArea não encontrado ao tentar atualizar.");
+        return;
+    }
+    muralPostArea.innerHTML = ''; // Limpa antes de recriar
+    muralPostArea.innerHTML = `
+        <textarea id="mural-message-input" rows="3" placeholder="Sua mensagem de otimismo (ou não)..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"></textarea>
+        <button id="submit-mural-message-btn" class="mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md text-sm">Enviar Mensagem</button>
+    `;
+    const submitMsgBtn = document.getElementById('submit-mural-message-btn');
+    if(submitMsgBtn) submitMsgBtn.addEventListener('click', handleSubmitMuralMessage);
+}
+
+
+// --- Inicialização e Funções Principais ---
 document.addEventListener('DOMContentLoaded', () => {
+    // Atribuir elementos globais aqui, após o DOM estar carregado
+    authWidgetContainer = document.getElementById('auth-widget-container');
+    enqueteOptionsArea = document.getElementById('enquete-options-area');
+    muralPostArea = document.getElementById('mural-post-area');
+    rankingDisplayArea = document.getElementById('ranking-display-area');
+    top3CountdownArea = document.getElementById('top3-countdown-area');
+    enqueteChartCanvas = document.getElementById('enqueteChart');
+    muralMensagensDisplay = document.getElementById('mural-mensagens-display');
+
+
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
     } else {
@@ -19,48 +133,33 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeApp();
     } else {
         console.error('Supabase SDK não encontrado ou createClient não é uma função.');
-        // (código de erro visual omitido para brevidade)
+        const body = document.querySelector('body');
+        const errorDiv = document.createElement('div');
+        errorDiv.style.backgroundColor = 'red';
+        errorDiv.style.color = 'white';
+        errorDiv.style.padding = '10px';
+        errorDiv.style.textAlign = 'center';
+        errorDiv.style.position = 'fixed';
+        errorDiv.style.top = '0';
+        errorDiv.style.left = '0';
+        errorDiv.style.width = '100%';
+        errorDiv.style.zIndex = '9999';
+        errorDiv.textContent = 'Erro crítico: Não foi possível carregar o SDK do banco de dados.';
+        if (body) {
+            body.prepend(errorDiv);
+        }
     }
 });
 
-// Declarações de funções movidas para cima para garantir que estejam definidas antes de initializeApp
-// --- Funções de Autenticação e Usuário ---
-// --- Funções de Palpites ---
-// --- Funções de Enquete ---
-// --- Funções de Mensagens ---
-
-const authWidgetContainer = document.getElementById('auth-widget-container');
-const enqueteOptionsArea = document.getElementById('enquete-options-area');
-const muralPostArea = document.getElementById('mural-post-area');
-const rankingDisplayArea = document.getElementById('ranking-display-area');
-const top3CountdownArea = document.getElementById('top3-countdown-area');
-const enqueteChartCanvas = document.getElementById('enqueteChart');
-let enqueteChartInstance = null;
-const OPCOES_ENQUETE = [
-    { label: 'Super Otimista', value: 'Super Otimista', icon: '😊' },
-    { label: 'Otimista', value: 'Otimista', icon: '🙂' },
-    { label: 'Realista', value: 'Realista', icon: '😐' },
-    { label: 'Pessimista', value: 'Pessimista', icon: '😟' },
-    { label: 'Mar céu lar', value: 'Mar céu lar', icon: '🌊' }
-];
-const palpiteCountdownIntervals = {}; 
-const muralMensagensDisplay = document.getElementById('mural-mensagens-display');
-
-
 function initializeApp() {
     console.log('Aplicativo inicializado e pronto para interagir com Supabase.');
-    setupAuthElements(); // Configura auth e widget de palpite
+    setupAuthElements(); 
     loadUsersForDropdown();
     
-    // Carregar dados e atualizar UI
     loadPalpites(); 
     loadEnqueteResults(); 
     loadMensagens(); 
     
-    // As funções de update da UI são chamadas após o login/logout ou carregamento inicial de dados
-    // Elas dependem do currentUser e dos dados carregados.
-    // A chamada inicial delas pode ser feita aqui ou dentro das respectivas funções de load.
-    // Para garantir que os elementos existam, chamamos aqui.
     updateUserPalpiteWidget(); 
     updateEnqueteSection(); 
     updateMuralSection(); 
@@ -333,26 +432,6 @@ async function handleLoginRegister() {
     updateMuralSection();
     loadPalpites(); 
     loadMensagens(); 
-}
-
-function updateUserPalpiteWidget() {
-    const palpiteWidget = document.getElementById('user-palpite-widget');
-    const palpiteDateDisplay = document.getElementById('user-palpite-date-display');
-
-    if (!palpiteWidget || !palpiteDateDisplay) return;
-
-    if (currentUser.id !== 0 && currentUser.palpite) {
-        const date = new Date(currentUser.palpite);
-        date.setUTCDate(date.getUTCDate() + 1);
-        palpiteDateDisplay.textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year:'2-digit' }); 
-        palpiteWidget.style.display = 'flex';
-    } else if (currentUser.id !== 0 && !currentUser.palpite) {
-        palpiteDateDisplay.textContent = 'Palpite?'; 
-        palpiteWidget.style.display = 'flex';
-    }
-    else {
-        palpiteWidget.style.display = 'none';
-    }
 }
 
 async function handleSubmitPalpite() { 
@@ -653,37 +732,36 @@ async function updateEnqueteSection() {
         document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
             button.addEventListener('click', toggleAuthModal);
         });
-        loadEnqueteResults(); // Carrega o gráfico mesmo para anônimos
-        return;
+        // loadEnqueteResults(); // Gráfico é carregado independentemente
+        return; // Não prosseguir para carregar userVote se anônimo
     }
     
-    (async () => { 
-        const userVote = await checkIfUserVoted(currentUser.id);
+    // Apenas para usuários logados
+    const userVote = await checkIfUserVoted(currentUser.id);
 
-        const optionsContainer = document.createElement('div');
-        optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
+    const optionsContainer = document.createElement('div');
+    optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
 
-        OPCOES_ENQUETE.forEach(opcao => { 
-            const button = document.createElement('button');
-            button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
-            if (opcao.value === userVote) {
-                button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
-            } else {
-                button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
-            }
-            button.title = opcao.label;
-            button.textContent = opcao.icon;
-            button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
-            optionsContainer.appendChild(button);
-        });
-        enqueteOptionsArea.appendChild(optionsContainer);
-        if (userVote) {
-             enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+    OPCOES_ENQUETE.forEach(opcao => { 
+        const button = document.createElement('button');
+        button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
+        if (opcao.value === userVote) {
+            button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
         } else {
-            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+            button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
         }
-        loadEnqueteResults(); 
-    })();
+        button.title = opcao.label;
+        button.textContent = opcao.icon;
+        button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
+        optionsContainer.appendChild(button);
+    });
+    enqueteOptionsArea.appendChild(optionsContainer);
+    if (userVote) {
+            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+    } else {
+        enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+    }
+    // loadEnqueteResults(); // Gráfico é carregado em initializeApp e após voto
 }
 
 
@@ -719,7 +797,7 @@ async function loadEnqueteResults() {
         console.error('Erro ao carregar resultados da enquete:', error.message);
         if (enqueteChartCanvas) {
             const ctx = enqueteChartCanvas.getContext('2d');
-            if (ctx) { // Verifica se o contexto é válido
+            if (ctx) { 
                 ctx.clearRect(0, 0, enqueteChartCanvas.width, enqueteChartCanvas.height);
                 ctx.font = "14px Inter";
                 ctx.fillStyle = "red";
@@ -800,7 +878,7 @@ function renderEnqueteChart(resultados) {
                 display: true,
                 formatter: (value, ctx) => {
                     let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                    let percentage = sum > 0 ? (value * 100 / sum).toFixed(0) + "%" : "0%"; // Arredondado para inteiro
+                    let percentage = sum > 0 ? (value * 100 / sum).toFixed(0) + "%" : "0%"; 
                     if (value === 0) return ''; 
                     return `${value}\n(${percentage})`;
                 },
@@ -826,11 +904,13 @@ function renderEnqueteChart(resultados) {
         enqueteChartInstance.options.plugins.datalabels = chartOptions.plugins.datalabels;
         enqueteChartInstance.update();
     } else {
+        // Verifica se ChartDataLabels está registrado antes de usá-lo
+        const pluginsToUse = typeof ChartDataLabels !== 'undefined' ? [ChartDataLabels] : [];
         enqueteChartInstance = new Chart(ctx, {
             type: 'doughnut', 
             data: chartData,
             options: chartOptions,
-            plugins: [ChartDataLabels] // Registrar plugin localmente se não globalmente
+            plugins: pluginsToUse 
         });
     }
 }
@@ -868,10 +948,7 @@ async function handleMessageReaction(messageId, reactionType) {
         return;
     }
     
-    // Presumindo que as colunas 'likes' e 'dislikes' (integer) existem na tabela 'messages'
     try {
-        // 1. Buscar a mensagem para obter contagens atuais e verificar se o usuário já reagiu (se implementado)
-        // Por simplicidade, vamos apenas incrementar. Uma lógica mais robusta lidaria com "desfazer" ou trocar reação.
         const { data: messageData, error: fetchError } = await supabaseClient
             .from('messages')
             .select('likes, dislikes')
@@ -894,11 +971,13 @@ async function handleMessageReaction(messageId, reactionType) {
 
         if (updateError) throw updateError;
         
-        loadMensagens(); // Recarrega as mensagens para mostrar a contagem atualizada
+        loadMensagens(); 
 
     } catch (error) {
         console.error(`Erro ao registrar ${reactionType}:`, error.message);
-        alert(`Falha ao registrar ${reactionType}.`);
+        // Não mostrar alerta para o usuário aqui, pois as colunas podem não existir.
+        // Apenas logar o erro.
+        // alert(`Falha ao registrar ${reactionType}.`);
     }
 }
 
@@ -914,9 +993,10 @@ async function handleSubmitMuralMessage() {
     }
 
     try {
+        // Assumindo que as colunas likes e dislikes existem e têm default 0
         const { error } = await supabaseClient 
             .from('messages') 
-            .insert([{ user_id: currentUser.id, message: messageText, likes: 0, dislikes: 0 }]); // Inclui likes/dislikes default
+            .insert([{ user_id: currentUser.id, message: messageText, likes: 0, dislikes: 0 }]); 
         
         if (error) throw error;
 
@@ -926,7 +1006,7 @@ async function handleSubmitMuralMessage() {
 
     } catch (error) {
         console.error('Erro ao enviar mensagem:', error.message);
-        alert('Falha ao enviar mensagem. Tente novamente.');
+        alert('Falha ao enviar mensagem. Verifique se as colunas "likes" e "dislikes" existem na tabela "messages".');
     }
 }
 
@@ -937,6 +1017,8 @@ async function loadMensagens() {
         return;
     }
     try {
+        // Tenta selecionar likes e dislikes. Se não existirem, a query pode falhar.
+        // Uma abordagem mais robusta seria verificar o schema ou tratar o erro específico.
         const { data: messages, error } = await supabaseClient 
             .from('messages') 
             .select(`
@@ -951,8 +1033,23 @@ async function loadMensagens() {
             .order('created_at', { ascending: false })
             .limit(50); 
 
-        if (error) throw error;
-        renderMensagens(messages);
+        if (error) {
+            // Se o erro for sobre colunas 'likes'/'dislikes' não existirem, tenta buscar sem elas.
+            if (error.message.includes("column") && (error.message.includes("likes") || error.message.includes("dislikes"))) {
+                console.warn("Colunas 'likes' ou 'dislikes' não encontradas. Tentando buscar mensagens sem elas.");
+                const { data: messagesFallback, error: fallbackError } = await supabaseClient
+                    .from('messages')
+                    .select('id, created_at, message, user_id, user(name)')
+                    .order('created_at', { ascending: false })
+                    .limit(50);
+                if (fallbackError) throw fallbackError;
+                renderMensagens(messagesFallback, true); // Passa um flag para não renderizar reações
+            } else {
+                throw error;
+            }
+        } else {
+            renderMensagens(messages, false);
+        }
 
     } catch (error) {
         console.error('Erro ao carregar mensagens:', error.message);
@@ -960,7 +1057,7 @@ async function loadMensagens() {
     }
 }
 
-function renderMensagens(messages) {
+function renderMensagens(messages, hideReactions = false) {
     if (!muralMensagensDisplay) return;
     muralMensagensDisplay.innerHTML = ''; 
 
@@ -981,16 +1078,20 @@ function renderMensagens(messages) {
             deleteButtonHTML = `<button class="delete-message-btn text-red-500 hover:text-red-700 text-xs ml-2" data-message-id="${msg.id}">🗑️ Apagar</button>`;
         }
         
-        const reactionsHTML = `
-            <div class="mt-2 pt-2 border-t border-gray-200 flex items-center space-x-3">
-                <button class="reaction-btn text-gray-500 hover:text-green-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="like">
-                    👍 <span class="ml-1">${msg.likes || 0}</span>
-                </button>
-                <button class="reaction-btn text-gray-500 hover:text-red-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="dislike">
-                    👎 <span class="ml-1">${msg.dislikes || 0}</span>
-                </button>
-            </div>
-        `;
+        let reactionsHTML = '';
+        if (!hideReactions) {
+            reactionsHTML = `
+                <div class="mt-2 pt-2 border-t border-gray-200 flex items-center space-x-3">
+                    <button class="reaction-btn text-gray-500 hover:text-green-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="like">
+                        👍 <span class="ml-1">${msg.likes || 0}</span>
+                    </button>
+                    <button class="reaction-btn text-gray-500 hover:text-red-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="dislike">
+                        👎 <span class="ml-1">${msg.dislikes || 0}</span>
+                    </button>
+                </div>
+            `;
+        }
+
 
         messageDiv.innerHTML = `
             <div class="flex justify-between items-start">
@@ -1017,14 +1118,16 @@ function renderMensagens(messages) {
             handleDeleteMessage(messageId);
         });
     });
-    document.querySelectorAll('.reaction-btn').forEach(button => {
-        button.addEventListener('click', (e) => {
-            const btn = e.target.closest('button');
-            const messageId = btn.dataset.messageId;
-            const reactionType = btn.dataset.reaction;
-            handleMessageReaction(messageId, reactionType);
+    if (!hideReactions) {
+        document.querySelectorAll('.reaction-btn').forEach(button => {
+            button.addEventListener('click', (e) => {
+                const btn = e.target.closest('button');
+                const messageId = btn.dataset.messageId;
+                const reactionType = btn.dataset.reaction;
+                handleMessageReaction(messageId, reactionType);
+            });
         });
-    });
+    }
 }
 
 

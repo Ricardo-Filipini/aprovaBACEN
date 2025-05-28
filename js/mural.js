@@ -249,8 +249,10 @@
                 const messageDate = new Date(msg.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
                 let deleteButtonHTML = '';
+                let editButtonHTML = ''; // Novo botão de editar
                 if (app.currentUser.id !== 0 && msg.user_id === app.currentUser.id) {
-                    deleteButtonHTML = `<button class="delete-message-btn text-red-500 hover:text-red-700 text-xs ml-2" data-message-id="${msg.id}">🗑️ Apagar</button>`;
+                    deleteButtonHTML = `<button class="delete-message-btn text-red-500 hover:text-red-700 text-xs ml-2" data-message-id="${msg.id}" title="Apagar mensagem">🗑️</button>`; // Texto removido, title adicionado para acessibilidade
+                    editButtonHTML = `<button class="edit-message-btn text-blue-500 hover:text-blue-700 text-xs ml-2" data-message-id="${msg.id}" data-current-message="${encodeURIComponent(msg.message)}" title="Editar mensagem">✏️</button>`; // Texto removido, title adicionado
                 }
                 
                 let reactionsHTML = '';
@@ -270,7 +272,10 @@
                 messageDiv.innerHTML = `
                     <div class="flex justify-between items-start">
                         <p class="break-words whitespace-pre-wrap flex-grow">${msg.message}</p>
-                        ${deleteButtonHTML}
+                        <div class="flex items-center">
+                            ${editButtonHTML}
+                            ${deleteButtonHTML}
+                        </div>
                     </div>
                     <p class="text-xs text-gray-500 mt-1">
                         – <span class="font-medium">${authorName}</span> em ${messageDate}
@@ -293,6 +298,16 @@
                 });
             });
 
+            // Adiciona event listener para botões de editar
+            document.querySelectorAll('.edit-message-btn').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const buttonEl = e.target.closest('button');
+                    const messageId = buttonEl.dataset.messageId;
+                    const currentMessage = decodeURIComponent(buttonEl.dataset.currentMessage);
+                    app.mural.handleEditMessage(messageId, currentMessage);
+                });
+            });
+
             if (!hideReactions) {
                 document.querySelectorAll('.reaction-btn').forEach(button => {
                     button.addEventListener('click', (e) => {
@@ -302,6 +317,37 @@
                         app.mural.handleMessageReaction(messageId, reactionType);
                     });
                 });
+            }
+        },
+
+        handleEditMessage: async function(messageId, currentMessage) {
+            if (app.currentUser.id === 0) return;
+
+            const newMessageText = prompt("Edite sua mensagem:", currentMessage);
+
+            if (newMessageText === null || newMessageText.trim() === currentMessage.trim()) {
+                // Usuário cancelou ou não alterou a mensagem
+                return;
+            }
+            
+            if (newMessageText.trim() === "") {
+                alert("A mensagem não pode ficar vazia. Se desejar, apague a mensagem.");
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from('messages')
+                    .update({ message: newMessageText.trim(), updated_at: new Date().toISOString() }) // Adiciona updated_at se quiser rastrear edições
+                    .eq('id', messageId)
+                    .eq('user_id', app.currentUser.id); // Segurança extra
+
+                if (error) throw error;
+                alert("Mensagem atualizada com sucesso!");
+                app.mural.loadMensagens();
+            } catch (error) {
+                console.error("Erro ao atualizar mensagem:", error.message);
+                alert("Falha ao atualizar mensagem.");
             }
         },
 

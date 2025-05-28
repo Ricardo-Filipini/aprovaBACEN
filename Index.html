@@ -8,6 +8,11 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script type="module">
+        // Adiciona ao escopo global para que mural.js possa acessar
+        import { GoogleGenerativeAI } from "https://esm.run/@google/generative-ai";
+        window.GoogleGenerativeAI = GoogleGenerativeAI;
+    </script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -373,9 +378,12 @@
                     <h3 class="text-xl font-semibold text-teal-700 mb-3 flex items-center">
                         <span class="section-title-icon mr-2">💬</span>Mural da Esperança (ou Desespero)
                     </h3>
-                    <div id="mural-post-area" class="mb-4">
-                        </div>
-                    <div id="mural-mensagens-display" class="max-h-96 overflow-y-auto space-y-3">
+                    <div class="flex items-center mb-4">
+                        <textarea id="message-input" class="w-full p-2 border border-gray-300 rounded-md focus:ring-teal-500 focus:border-teal-500" rows="3" placeholder="Digite sua mensagem ou palpite aqui..."></textarea>
+                        <button id="gerar-msg-ia-btn" title="Gerar mensagem com IA" class="ml-2 p-2 bg-teal-500 hover:bg-teal-600 text-white rounded-md">🤖</button>
+                    </div>
+                    <button id="send-message-btn" class="bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md transition-colors w-full">Enviar Mensagem</button>
+                    <div id="mural-mensagens-display" class="mt-4 max-h-96 overflow-y-auto space-y-3">
                         </div>
                 </div>
 

@@ -10,28 +10,93 @@
 
     app.mural = {
         init: function() {
-            // muralPostArea e muralMensagensDisplay são buscados em ui.js
             console.log("Módulo Mural inicializado.");
-            this.updateMuralSection(); // Configura a área de postagem
+            this.setupEventListeners(); // Configura os event listeners para os botões existentes
             this.loadMensagens();      // Carrega as mensagens existentes
         },
 
-        updateMuralSection: function() {
-            if (!app.uiElements.muralPostArea) {
-                console.warn("Elemento muralPostArea não encontrado ao tentar atualizar (mural.js).");
+        setupEventListeners: function() {
+            // Adiciona event listener para o botão de enviar mensagem
+            const sendMessageBtn = document.getElementById('send-message-btn');
+            if (sendMessageBtn) {
+                sendMessageBtn.addEventListener('click', app.mural.handleSubmitMuralMessage);
+            } else {
+                console.warn("Botão 'send-message-btn' não encontrado ao configurar listeners (mural.js).");
+            }
+
+            // Adiciona event listener para o botão de gerar mensagem por IA
+            const gerarMsgIaBtn = document.getElementById('gerar-msg-ia-btn');
+            if (gerarMsgIaBtn) {
+                gerarMsgIaBtn.addEventListener('click', app.mural.gerarMensagemIA);
+            } else {
+                console.warn("Botão 'gerar-msg-ia-btn' não encontrado ao configurar listeners (mural.js).");
+            }
+        },
+
+        gerarMensagemIA: async function() {
+            const messageInput = document.getElementById('message-input'); // ID da textarea no Index.html
+            if (!messageInput) {
+                console.error("Textarea para mensagem não encontrado.");
+                alert("Erro: Textarea para mensagem não encontrado.");
                 return;
             }
-            app.uiElements.muralPostArea.innerHTML = '';
-            app.uiElements.muralPostArea.innerHTML = `
-                <textarea id="mural-message-input" rows="3" placeholder="Sua mensagem de otimismo (ou não)..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"></textarea>
-                <button id="submit-mural-message-btn" class="mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md text-sm">Enviar Mensagem</button>
-            `;
-            const submitMsgBtn = document.getElementById('submit-mural-message-btn');
-            if(submitMsgBtn) submitMsgBtn.addEventListener('click', app.mural.handleSubmitMuralMessage);
+
+            messageInput.value = 'Gerando sugestão... 🤖'; // Limpa e informa o usuário
+            messageInput.disabled = true;
+            const gerarBtn = document.getElementById('gerar-msg-ia-btn');
+            if(gerarBtn) gerarBtn.disabled = true;
+
+            try {
+                if (!window.GoogleGenerativeAI) {
+                    throw new Error("SDK do Google Generative AI não carregado.");
+                }
+                if (!aprovaBACEN.GEMINI_API_KEY || !aprovaBACEN.GEMINI_MODEL_NAME) {
+                    throw new Error("Chave da API Gemini ou nome do modelo não configurados.");
+                }
+
+                const genAI = new window.GoogleGenerativeAI(aprovaBACEN.GEMINI_API_KEY);
+                const model = genAI.getGenerativeModel({ model: aprovaBACEN.GEMINI_MODEL_NAME });
+
+                // Carregar o conteúdo do arquivo de conversa
+                let arquivoContexto = "";
+                try {
+                    const responseFile = await fetch('Conversa_do_WhatsApp_G200_BCB.txt');
+                    if (!responseFile.ok) {
+                        throw new Error(`Erro ao carregar o arquivo de contexto: ${responseFile.statusText}`);
+                    }
+                    arquivoContexto = await responseFile.text();
+                } catch (fileError) {
+                    console.warn("Não foi possível carregar o arquivo de contexto Conversa_do_WhatsApp_G200_BCB.txt. Usando prompt genérico.", fileError);
+                    // Pode-se optar por não gerar mensagem ou usar um prompt padrão caso o arquivo não seja encontrado/carregado
+                }
+
+                const prompt = `Com base no seguinte contexto de conversas de um grupo de WhatsApp de aprovados no Cadastro Reserva do concurso de Auditor do Banco Central (BACEN): 
+                ---
+                ${arquivoContexto}
+                ---
+                Crie uma mensagem curta (máximo 2-3 frases), que seja motivacional ou de desespero bem-humorada, refletindo os temas e o tom das conversas do grupo, para ser usada no mural de mensagens. Pense na ansiedade e esperança do momento.`;
+
+                const result = await model.generateContent(prompt);
+                const response = await result.response;
+                let text = response.text();
+
+                // Adiciona ícones de robô
+                text = `🤖 ${text.trim()} 🤖`;
+
+                messageInput.value = text;
+
+            } catch (error) {
+                console.error("Erro ao gerar mensagem com IA:", error);
+                messageInput.value = "🤖 Erro ao gerar mensagem. Tente novamente. 🤖";
+                alert(`Erro ao gerar mensagem com IA: ${error.message}`);
+            } finally {
+                messageInput.disabled = false;
+                if(gerarBtn) gerarBtn.disabled = false;
+            }
         },
 
         handleSubmitMuralMessage: async function() {
-            const messageInput = document.getElementById('mural-message-input');
+            const messageInput = document.getElementById('message-input'); // Corrigido o ID
             if (!messageInput) return;
             const messageText = messageInput.value.trim();
 

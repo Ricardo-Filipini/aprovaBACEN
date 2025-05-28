@@ -1,25 +1,19 @@
 // js/app.js
 
-// As chaves da Supabase virão do arquivo .env, mas como estamos no lado do cliente,
-// elas precisarão ser expostas diretamente aqui ou carregadas de uma forma que o cliente possa acessá-las.
-// Por segurança, em um ambiente de produção real, considere usar variáveis de ambiente do build ou um endpoint de backend para buscá-las.
-// Para este exemplo, vou assumir que elas serão inseridas diretamente ou via um script no HTML.
+const SUPABASE_URL = "https://nrmkbqbuuytwiuweedfy.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8";
 
-//const SUPABASE_URL = 'https://nrmkbqbuuytwiuweedfy.supabase.co'; // Será substituído no Index.html
-//const SUPABASE_ANON_KEY = 'supabase_anon_key = eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8'; // Será substituído no Index.html
-
-let supabase; // Será inicializado após o carregamento das chaves
-let currentUser = { id: 0, nome: 'Anônimo', palpite: null }; // Usuário padrão anônimo
+let supabaseClient; // Renomeado para evitar conflito com o objeto global do SDK
+let currentUser = { id: 0, nome: 'Anônimo', palpite: null }; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Verifica se as variáveis SUPABASE_URL e SUPABASE_ANON_KEY foram definidas no escopo global (pelo Index.html)
-    if (typeof SUPABASE_URL !== 'undefined' && typeof SUPABASE_ANON_KEY !== 'undefined' && typeof supabase !== 'undefined' && typeof supabase.createClient === 'function') {
-        supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log('Supabase client inicializado.');
+    // O objeto global do SDK é window.supabase
+    if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); // Usar window.supabase e atribuir a supabaseClient
+        console.log('Supabase client instance inicializada.');
         initializeApp();
     } else {
-        console.error('As variáveis SUPABASE_URL e SUPABASE_ANON_KEY não foram definidas. Verifique o Index.html.');
-        // Adicionar uma mensagem de erro visível para o usuário na página
+        console.error('Supabase SDK não encontrado ou createClient não é uma função.');
         const body = document.querySelector('body');
         const errorDiv = document.createElement('div');
         errorDiv.style.backgroundColor = 'red';
@@ -31,11 +25,10 @@ document.addEventListener('DOMContentLoaded', () => {
         errorDiv.style.left = '0';
         errorDiv.style.width = '100%';
         errorDiv.style.zIndex = '9999';
-        errorDiv.textContent = 'Erro crítico: Não foi possível conectar ao banco de dados. As chaves de API estão ausentes.';
+        errorDiv.textContent = 'Erro crítico: Não foi possível carregar o SDK do banco de dados.';
         if (body) {
             body.prepend(errorDiv);
         }
-        return;
     }
 });
 
@@ -60,7 +53,11 @@ const muralPostArea = document.getElementById('mural-post-area');
 
 
 function setupAuthElements() {
-    authWidgetContainer.innerHTML = ''; // Limpa o container
+    if (!authWidgetContainer) {
+        console.error("Elemento auth-widget-container não encontrado.");
+        return;
+    }
+    authWidgetContainer.innerHTML = ''; 
 
     const authButton = document.createElement('button');
     authButton.className = 'bg-white text-blue-700 py-2 px-4 rounded-full shadow-lg hover:bg-blue-100 transition-all duration-300 flex items-center text-sm';
@@ -79,9 +76,14 @@ function setupAuthElements() {
     authButton.addEventListener('click', toggleAuthModal);
     authWidgetContainer.appendChild(authButton);
 
-    const modal = document.createElement('div');
-    modal.id = 'auth-modal';
-    modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden p-4';
+    let modal = document.getElementById('auth-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'auth-modal';
+        modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden p-4';
+        document.body.appendChild(modal);
+    }
+    
     modal.innerHTML = `
         <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
             <div class="flex justify-between items-center mb-4">
@@ -106,8 +108,7 @@ function setupAuthElements() {
             </div>
         </div>
     `;
-    document.body.appendChild(modal);
-
+    
     document.getElementById('close-auth-modal').addEventListener('click', toggleAuthModal);
     document.getElementById('login-button').addEventListener('click', handleLoginRegister);
     modal.addEventListener('click', (e) => { 
@@ -130,9 +131,9 @@ function toggleAuthModal() {
 }
 
 async function loadUsersForDropdown() {
-    if (!supabase) return;
+    if (!supabaseClient) return; // Usar supabaseClient
     try {
-        const { data: users, error } = await supabase.from('user').select('id, nome').order('nome', { ascending: true });
+        const { data: users, error } = await supabaseClient.from('user').select('id, nome').order('nome', { ascending: true }); // Usar supabaseClient
         if (error) throw error;
 
         const userSelect = document.getElementById('user-select');
@@ -174,7 +175,7 @@ async function handleLoginRegister() {
 
     if (newUserName) {
         try {
-            const { data: existingUser, error: checkError } = await supabase
+            const { data: existingUser, error: checkError } = await supabaseClient // Usar supabaseClient
                 .from('user')
                 .select('id, nome')
                 .eq('nome', newUserName)
@@ -189,7 +190,7 @@ async function handleLoginRegister() {
                 return;
             }
 
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient // Usar supabaseClient
                 .from('user')
                 .insert([{ nome: newUserName }])
                 .select()
@@ -206,9 +207,9 @@ async function handleLoginRegister() {
             alert('Falha ao registrar. Tente novamente.');
             return;
         }
-    } else if (selectedUserId && selectedUserId !== "0") {
+    } else if (selectedUserId) { 
         try {
-            const { data, error } = await supabase
+            const { data, error } = await supabaseClient // Usar supabaseClient
                 .from('user')
                 .select('id, nome, palpite')
                 .eq('id', selectedUserId)
@@ -217,34 +218,19 @@ async function handleLoginRegister() {
             if (error) throw error;
             if (data) {
                 currentUser = { id: data.id, nome: data.nome, palpite: data.palpite };
+            } else if (selectedUserId === "0") { 
+                 currentUser = { id: 0, nome: 'Anônimo', palpite: null };
+                 console.warn("Usuário anônimo (ID 0) não encontrado no banco. Usando default local.");
             }
         } catch (error) {
             console.error('Erro ao buscar usuário:', error.message);
             currentUser = { id: 0, nome: 'Anônimo', palpite: null }; 
         }
-    } else {
-         try {
-            const { data, error } = await supabase
-                .from('user')
-                .select('id, nome, palpite')
-                .eq('id', 0)
-                .single();
-            if (error && error.code !== 'PGRST116') throw error; 
-            
-            if (data) {
-                 currentUser = { id: data.id, nome: data.nome, palpite: data.palpite };
-            } else {
-                currentUser = { id: 0, nome: 'Anônimo', palpite: null };
-                console.warn("Usuário anônimo (ID 0) não encontrado no banco. Usando default local.");
-            }
-
-        } catch (error) {
-            console.error('Erro ao buscar usuário anônimo:', error.message);
-            currentUser = { id: 0, nome: 'Anônimo', palpite: null };
-        }
     }
 
-    document.getElementById('auth-username').textContent = currentUser.nome;
+    const authUsernameSpan = document.getElementById('auth-username');
+    if (authUsernameSpan) authUsernameSpan.textContent = currentUser.nome;
+    
     toggleAuthModal();
     console.log('Usuário atual:', currentUser);
 
@@ -256,6 +242,7 @@ async function handleLoginRegister() {
 }
 
 function updatePalpiteSection() {
+    if (!palpiteInputArea || !userPalpiteDisplay) return;
     palpiteInputArea.innerHTML = '';
     userPalpiteDisplay.innerHTML = '';
 
@@ -287,20 +274,15 @@ function updatePalpiteSection() {
 }
 
 function updateEnqueteSection() {
+    if (!enqueteOptionsArea) return;
     enqueteOptionsArea.innerHTML = '';
     
-    if (currentUser.id === 0) {
-        enqueteOptionsArea.innerHTML = '<p class="text-sm text-gray-600">Identifique-se para votar na enquete.</p>';
-        loadEnqueteResults(); // Ainda mostrar resultados gerais
-        return;
-    }
-    
     (async () => { 
-        const userVote = await checkIfUserVoted(currentUser.id);
+        const userVote = currentUser.id !== 0 ? await checkIfUserVoted(currentUser.id) : null;
 
-        if (userVote) {
+        if (userVote && currentUser.id !== 0) { 
             enqueteOptionsArea.innerHTML = `<p class="text-sm text-gray-700">Você já votou: <strong class="text-purple-600">${userVote}</strong>.</p>`;
-        } else {
+        } else { 
             const form = document.createElement('form');
             form.id = 'enquete-form';
             form.className = 'space-y-2';
@@ -335,12 +317,8 @@ function updateEnqueteSection() {
 }
 
 function updateMuralSection() {
+    if (!muralPostArea) return;
     muralPostArea.innerHTML = '';
-    if (currentUser.id === 0) {
-        muralPostArea.innerHTML = '<p class="text-sm text-gray-600">Identifique-se para enviar mensagens no mural.</p>';
-        return;
-    }
-
     muralPostArea.innerHTML = `
         <textarea id="mural-message-input" rows="3" placeholder="Sua mensagem de otimismo (ou não)..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"></textarea>
         <button id="submit-mural-message-btn" class="mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md text-sm">Enviar Mensagem</button>
@@ -369,7 +347,7 @@ async function handleSubmitPalpite() {
     const palpiteDate = palpiteDateInput.value; 
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient // Usar supabaseClient
             .from('user')
             .update({ palpite: palpiteDate })
             .eq('id', currentUser.id)
@@ -398,7 +376,7 @@ async function handleRemovePalpite() {
     }
 
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient // Usar supabaseClient
             .from('user')
             .update({ palpite: null })
             .eq('id', currentUser.id)
@@ -418,13 +396,13 @@ async function handleRemovePalpite() {
 }
 
 async function loadPalpites() {
-    if (!supabase) {
+    if (!supabaseClient) { // Usar supabaseClient
         console.warn("Supabase client não inicializado ao tentar carregar palpites.");
         if(rankingDisplayArea) rankingDisplayArea.innerHTML = '<p class="text-sm text-orange-500">Conexão com ranking indisponível.</p>';
         return;
     }
     try {
-        const { data: palpites, error } = await supabase
+        const { data: palpites, error } = await supabaseClient // Usar supabaseClient
             .from('user')
             .select('id, nome, palpite')
             .not('palpite', 'is', null) 
@@ -481,8 +459,15 @@ function renderRanking(palpites) {
     rankingDisplayArea.appendChild(list);
 }
 
+const palpiteCountdownIntervals = {}; // Mover para escopo global ou de módulo se necessário
+
 function renderTop3Countdowns(top3Palpites) {
     if(!top3CountdownArea) return;
+    Object.values(palpiteCountdownIntervals).forEach(clearInterval);
+    for (const key in palpiteCountdownIntervals) {
+        delete palpiteCountdownIntervals[key];
+    }
+
     top3CountdownArea.innerHTML = '<h4 class="text-md font-semibold text-orange-600 mb-2">Contagem Regressiva Top 3:</h4>';
     if (!top3Palpites || top3Palpites.length === 0) {
         top3CountdownArea.innerHTML += '<p class="text-sm text-gray-500">Sem palpites no Top 3 para contagem.</p>';
@@ -506,15 +491,15 @@ function renderTop3Countdowns(top3Palpites) {
             </div>
         `;
         top3CountdownArea.appendChild(countdownDiv);
-
-        setInterval(() => {
+        
+        const intervalId = setInterval(() => {
             updateSinglePalpiteCountdown(targetTime, `top3-${p.id}-days`, `top3-${p.id}-hours`, `top3-${p.id}-minutes`, `top3-${p.id}-seconds`, `countdown-top3-${p.id}`);
         }, 1000);
+        palpiteCountdownIntervals[`countdown-top3-${p.id}`] = intervalId;
         updateSinglePalpiteCountdown(targetTime, `top3-${p.id}-days`, `top3-${p.id}-hours`, `top3-${p.id}-minutes`, `top3-${p.id}-seconds`, `countdown-top3-${p.id}`); 
     });
 }
 
-const palpiteCountdownIntervals = {};
 
 function updateSinglePalpiteCountdown(targetTime, daysId, hoursId, minutesId, secondsId, containerId) {
     const now = new Date().getTime();
@@ -555,9 +540,9 @@ let enqueteChartInstance = null;
 const OPCOES_ENQUETE = ['Super Otimista', 'Otimista', 'Realista', 'Pessimista', 'Mar céu lar'];
 
 async function checkIfUserVoted(userId) {
-    if (!supabase || userId === 0) return null;
+    if (!supabaseClient || userId === 0) return null; // Usar supabaseClient
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient // Usar supabaseClient
             .from('enquete')
             .select('voto')
             .eq('user_id', userId)
@@ -575,13 +560,8 @@ async function checkIfUserVoted(userId) {
 }
 
 async function handleSubmitEnqueteVoto() {
-    if (currentUser.id === 0) {
-        alert('Você precisa estar identificado para votar.');
-        toggleAuthModal();
-        return;
-    }
-
     const form = document.getElementById('enquete-form');
+    if (!form) return;
     const selectedOption = form.querySelector('input[name="enquete-voto"]:checked');
 
     if (!selectedOption) {
@@ -591,16 +571,18 @@ async function handleSubmitEnqueteVoto() {
     const voto = selectedOption.value;
 
     try {
-        const jaVotou = await checkIfUserVoted(currentUser.id);
-        if (jaVotou) {
-            alert(`Você já votou: ${jaVotou}. Não é possível votar novamente.`);
-            updateEnqueteSection(); 
-            return;
+        if (currentUser.id !== 0) { 
+            const jaVotou = await checkIfUserVoted(currentUser.id);
+            if (jaVotou) {
+                alert(`Você já votou: ${jaVotou}. Não é possível votar novamente.`);
+                updateEnqueteSection(); 
+                return;
+            }
         }
 
-        const { error } = await supabase
+        const { error } = await supabaseClient // Usar supabaseClient
             .from('enquete')
-            .insert([{ user_id: currentUser.id, voto: voto }]);
+            .insert([{ user_id: currentUser.id, voto: voto }]); 
         
         if (error) throw error;
 
@@ -615,12 +597,12 @@ async function handleSubmitEnqueteVoto() {
 }
 
 async function loadEnqueteResults() {
-    if (!supabase) {
+    if (!supabaseClient) { // Usar supabaseClient
         console.warn("Supabase client não inicializado ao tentar carregar resultados da enquete.");
         return;
     }
     try {
-        const { data: votos, error } = await supabase
+        const { data: votos, error } = await supabaseClient // Usar supabaseClient
             .from('enquete')
             .select('voto, user_id'); 
 
@@ -712,12 +694,8 @@ function renderEnqueteChart(resultados) {
 const muralMensagensDisplay = document.getElementById('mural-mensagens-display');
 
 async function handleSubmitMuralMessage() {
-    if (currentUser.id === 0) {
-        alert('Você precisa estar identificado para enviar uma mensagem.');
-        toggleAuthModal();
-        return;
-    }
     const messageInput = document.getElementById('mural-message-input');
+    if (!messageInput) return;
     const messageText = messageInput.value.trim();
 
     if (!messageText) {
@@ -726,7 +704,7 @@ async function handleSubmitMuralMessage() {
     }
 
     try {
-        const { error } = await supabase
+        const { error } = await supabaseClient // Usar supabaseClient
             .from('message') 
             .insert([{ user_id: currentUser.id, menssage: messageText }]); 
         
@@ -743,13 +721,13 @@ async function handleSubmitMuralMessage() {
 }
 
 async function loadMensagens() {
-    if (!supabase) {
+    if (!supabaseClient) { // Usar supabaseClient
         console.warn("Supabase client não inicializado ao tentar carregar mensagens.");
         if (muralMensagensDisplay) muralMensagensDisplay.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar mural.</p>';
         return;
     }
     try {
-        const { data: messages, error } = await supabase
+        const { data: messages, error } = await supabaseClient // Usar supabaseClient
             .from('message')
             .select(`
                 id,
@@ -783,7 +761,7 @@ function renderMensagens(messages) {
         const messageDiv = document.createElement('div');
         messageDiv.className = 'p-3 rounded-md shadow-sm text-sm';
         
-        const authorName = msg.user ? msg.user.nome : 'Usuário Desconhecido';
+        const authorName = (msg.user && msg.user.nome) ? msg.user.nome : 'Anônimo';
         const messageDate = new Date(msg.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         messageDiv.innerHTML = `
@@ -793,7 +771,7 @@ function renderMensagens(messages) {
             </p>
         `;
 
-        if (msg.user_id === currentUser.id) {
+        if (msg.user_id === currentUser.id && currentUser.id !== 0) { 
             messageDiv.classList.add('bg-teal-50', 'border-l-4', 'border-teal-500');
         } else {
             messageDiv.classList.add('bg-gray-50');

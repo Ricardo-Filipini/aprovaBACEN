@@ -9,10 +9,20 @@ document.addEventListener('DOMContentLoaded', () => {
             // Adiciona um timestamp para evitar cache em alguns navegadores/cenários
             const response = await fetch(`sections/${sectionUrl}?v=${new Date().getTime()}`);
             if (!response.ok) {
+                console.error(`Falha ao buscar ${sectionUrl}. Status: ${response.status}`);
                 throw new Error(`HTTP error! status: ${response.status} ao carregar ${sectionUrl}`);
             }
             const html = await response.text();
-            contentArea.innerHTML = html;
+            console.log(`HTML recebido para ${sectionUrl}:`, html.substring(0, 500) + (html.length > 500 ? "..." : "")); // Log do HTML recebido (primeiros 500 chars)
+            
+            if (contentArea) {
+                console.log("Elemento contentArea encontrado. Inserindo HTML...");
+                contentArea.innerHTML = html;
+            } else {
+                console.error("Elemento contentArea (com ID 'content-area') NÃO foi encontrado no DOM. Não é possível carregar a seção.");
+                return; // Interrompe se a área de conteúdo não existe
+            }
+            
             setActiveLink(sectionUrl);
             // Após carregar o HTML, inicializa os scripts específicos da seção, se houver
             initializeSectionScripts(sectionUrl);

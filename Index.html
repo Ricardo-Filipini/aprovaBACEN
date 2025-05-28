@@ -6,6 +6,7 @@
     <title>Infográfico Interativo: Análise de Processos de Autorização (BACEN vs. RFB)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         body {
@@ -332,9 +333,67 @@
 <body class="p-4 md:p-8">
     <div class="max-w-6xl mx-auto">
         <header class="text-center mb-10 animate-on-scroll">
-            <h1 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2"><span class="section-title-icon">🔍</span>Análise Comparativa de Processos de Autorização</h1>
-            <p class="text-lg text-blue-600">Estudo de Caso: BACEN vs. Receita Federal (Foco em Divulgação)</p>
+            <div id="auth-widget-container" class="fixed top-4 right-4 z-50">
+                </div>
+            <h1 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2"><span class="section-title-icon">🎉</span>Infográfico Interativo AprovaBACEN</h1>
+            <p class="text-lg text-blue-600">Controle a ansiedade e acompanhe as novidades do Cadastro Reserva!</p>
         </header>
+
+        <!-- Novas Seções Interativas -->
+        <section id="user-interaction-zone" class="mb-12 animate-on-scroll">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card de Palpites -->
+                <div id="palpites-card" class="card">
+                    <h3 class="text-xl font-semibold text-indigo-700 mb-3 flex items-center">
+                        <span class="section-title-icon mr-2">🎯</span>Seu Palpite
+                    </h3>
+                    <div id="palpite-input-area">
+                        </div>
+                    <div id="user-palpite-display" class="mt-2"></div>
+                </div>
+
+                <!-- Card de Enquete -->
+                <div id="enquete-card" class="card col-span-1 md:col-span-2">
+                    <h3 class="text-xl font-semibold text-purple-700 mb-3 flex items-center">
+                        <span class="section-title-icon mr-2">📊</span>Termômetro da Ansiedade
+                    </h3>
+                    <div id="enquete-options-area">
+                        </div>
+                    <div id="enquete-results-area" class="mt-4">
+                        <canvas id="enqueteChart" class="max-h-60"></canvas>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="mural-e-ranking" class="mb-12 animate-on-scroll">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Mural de Mensagens -->
+                <div id="mural-mensagens-card" class="card">
+                    <h3 class="text-xl font-semibold text-teal-700 mb-3 flex items-center">
+                        <span class="section-title-icon mr-2">💬</span>Mural da Esperança (ou Desespero)
+                    </h3>
+                    <div id="mural-post-area" class="mb-4">
+                        </div>
+                    <div id="mural-mensagens-display" class="max-h-96 overflow-y-auto space-y-3">
+                        </div>
+                </div>
+
+                <!-- Ranking de Palpites -->
+                <div id="ranking-palpites-card" class="card">
+                    <h3 class="text-xl font-semibold text-orange-700 mb-3 flex items-center">
+                        <span class="section-title-icon mr-2">🏆</span>Ranking dos Palpites
+                    </h3>
+                    <div id="ranking-display-area" class="space-y-2">
+                        </div>
+                    <div id="top3-countdown-area" class="mt-4">
+                        <h4 class="text-md font-semibold text-orange-600 mb-2">Contagem Regressiva Top 3:</h4>
+                        </div>
+                </div>
+            </div>
+        </section>
+        <!-- Fim das Novas Seções Interativas -->
+
 
         <section id="bacen-projections" class="mb-12 animate-on-scroll">
             <h2 class="text-3xl font-bold text-center text-blue-700 mb-4"><span class="section-title-icon">🗓️</span>Projeções de Autorização para o BACEN</h2>
@@ -542,6 +601,14 @@
 
     <button onclick="scrollToTop()" id="toTopBtn" title="Voltar ao Topo">↑</button>
 
+    <script>
+        // Passando as credenciais do Supabase para o JavaScript
+        // Em um cenário real, estas chaves não deveriam estar diretamente no código fonte versionado
+        // se o repositório for público.
+        const SUPABASE_URL = "https://nrmkbqbuuytwiuweedfy.supabase.co";
+        const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8";
+    </script>
+    <script src="js/app.js"></script> 
     <script>
         const animatedElements = document.querySelectorAll('.animate-on-scroll');
         const observer = new IntersectionObserver((entries) => {

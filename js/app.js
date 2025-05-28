@@ -4,7 +4,7 @@ const SUPABASE_URL = "https://nrmkbqbuuytwiuweedfy.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5ybWticWJ1dXl0d2l1d2VlZGZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDg0MzgwODAsImV4cCI6MjA2NDAxNDA4MH0.r-J894pdUHE3uqwhBJIj5_jRR1ZKHwTDIfLWS7VNYK8";
 
 let supabaseClient; 
-let currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
+let currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
 
 document.addEventListener('DOMContentLoaded', () => {
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
@@ -38,15 +38,13 @@ function initializeApp() {
     loadPalpites(); 
     loadEnqueteResults(); 
     loadMensagens(); 
-    updatePalpiteSection(); 
+    updateUserPalpiteWidget(); 
     updateEnqueteSection(); 
     updateMuralSection(); 
 }
 
-// --- Funções de Autenticação e Usuário ---
+// --- Elementos Globais da UI ---
 const authWidgetContainer = document.getElementById('auth-widget-container');
-const palpiteInputArea = document.getElementById('palpite-input-area');
-const userPalpiteDisplay = document.getElementById('user-palpite-display');
 const enqueteOptionsArea = document.getElementById('enquete-options-area');
 const muralPostArea = document.getElementById('mural-post-area');
 
@@ -58,6 +56,9 @@ function setupAuthElements() {
     }
     authWidgetContainer.innerHTML = ''; 
 
+    const mainButtonContainer = document.createElement('div');
+    mainButtonContainer.className = 'flex flex-col items-end space-y-1'; 
+
     const authButton = document.createElement('button');
     authButton.className = 'bg-white text-blue-700 py-2 px-4 rounded-full shadow-lg hover:bg-blue-100 transition-all duration-300 flex items-center text-sm';
     
@@ -67,54 +68,82 @@ function setupAuthElements() {
 
     const userNameSpan = document.createElement('span');
     userNameSpan.id = 'auth-username';
-    userNameSpan.textContent = currentUser.name; // Corrigido: nome para name
+    userNameSpan.textContent = currentUser.name; 
 
     authButton.appendChild(userIcon);
     authButton.appendChild(userNameSpan);
-
     authButton.addEventListener('click', toggleAuthModal);
-    authWidgetContainer.appendChild(authButton);
+    mainButtonContainer.appendChild(authButton);
 
-    let modal = document.getElementById('auth-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'auth-modal';
-        modal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden p-4';
-        document.body.appendChild(modal);
-    }
+    const palpiteWidget = document.createElement('div');
+    palpiteWidget.id = 'user-palpite-widget';
+    palpiteWidget.className = 'text-xs text-gray-700 bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 cursor-pointer flex items-center';
+    palpiteWidget.style.display = 'none'; 
+    palpiteWidget.innerHTML = `
+        <span class="mr-1">📅</span>
+        <span id="user-palpite-date-display"></span>
+    `;
+    palpiteWidget.addEventListener('click', togglePalpiteModal);
+    mainButtonContainer.appendChild(palpiteWidget);
     
-    modal.innerHTML = `
+    authWidgetContainer.appendChild(mainButtonContainer);
+
+    let authModal = document.getElementById('auth-modal');
+    if (!authModal) {
+        authModal = document.createElement('div');
+        authModal.id = 'auth-modal';
+        authModal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden p-4';
+        document.body.appendChild(authModal);
+    }
+    authModal.innerHTML = `
         <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-sm">
             <div class="flex justify-between items-center mb-4">
                 <h2 class="text-xl font-semibold text-gray-700">Identificação</h2>
                 <button id="close-auth-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
             </div>
-            
             <div class="mb-4">
                 <label for="user-select" class="block text-sm font-medium text-gray-700 mb-1">Selecionar Usuário:</label>
                 <select id="user-select" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="0">Anônimo</option>
                 </select>
             </div>
-
             <div class="mb-4">
                 <label for="new-user-name" class="block text-sm font-medium text-gray-700 mb-1">Ou Cadastrar Novo:</label>
                 <input type="text" id="new-user-name" placeholder="Seu nome aqui" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
             </div>
-
             <div class="flex justify-end space-x-3">
                 <button id="login-button" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-md transition-colors">Entrar / Cadastrar</button>
             </div>
         </div>
     `;
-    
     document.getElementById('close-auth-modal').addEventListener('click', toggleAuthModal);
     document.getElementById('login-button').addEventListener('click', handleLoginRegister);
-    modal.addEventListener('click', (e) => { 
-        if (e.target.id === 'auth-modal') {
-            toggleAuthModal();
-        }
-    });
+    authModal.addEventListener('click', (e) => { if (e.target.id === 'auth-modal') toggleAuthModal(); });
+
+    let palpiteModal = document.getElementById('palpite-modal');
+    if(!palpiteModal) {
+        palpiteModal = document.createElement('div');
+        palpiteModal.id = 'palpite-modal';
+        palpiteModal.className = 'fixed inset-0 bg-gray-800 bg-opacity-75 flex items-center justify-center z-50 hidden p-4';
+        document.body.appendChild(palpiteModal);
+    }
+    palpiteModal.innerHTML = `
+        <div class="bg-white p-6 rounded-lg shadow-xl w-full max-w-xs">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-semibold text-gray-700">Seu Palpite</h2>
+                <button id="close-palpite-modal" class="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+            <div class="mb-4">
+                <label for="palpite-date-input" class="block text-sm font-medium text-gray-700 mb-1">Data da Divulgação:</label>
+                <input type="date" id="palpite-date-input" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div id="palpite-modal-actions" class="flex justify-end space-x-3">
+                </div>
+        </div>
+    `;
+    document.getElementById('close-palpite-modal').addEventListener('click', togglePalpiteModal);
+    palpiteModal.addEventListener('click', (e) => { if (e.target.id === 'palpite-modal') togglePalpiteModal(); });
+    updateUserPalpiteWidget(); 
 }
 
 function toggleAuthModal() {
@@ -129,10 +158,53 @@ function toggleAuthModal() {
     }
 }
 
+function togglePalpiteModal() {
+    if (currentUser.id === 0) {
+        alert("Identifique-se para gerenciar seu palpite.");
+        toggleAuthModal(); 
+        return;
+    }
+    const modal = document.getElementById('palpite-modal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+        if (!modal.classList.contains('hidden')) {
+            const palpiteDateInput = document.getElementById('palpite-date-input');
+            if (currentUser.palpite) {
+                palpiteDateInput.value = currentUser.palpite;
+            } else {
+                palpiteDateInput.value = '';
+            }
+            renderPalpiteModalActions();
+        }
+    }
+}
+
+function renderPalpiteModalActions() {
+    const actionsContainer = document.getElementById('palpite-modal-actions');
+    actionsContainer.innerHTML = '';
+
+    const saveButton = document.createElement('button');
+    saveButton.id = 'save-palpite-btn';
+    saveButton.className = 'bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-4 rounded-md text-sm';
+    saveButton.textContent = currentUser.palpite ? 'Atualizar Palpite' : 'Salvar Palpite';
+    saveButton.addEventListener('click', handleSubmitPalpite);
+    actionsContainer.appendChild(saveButton);
+
+    if (currentUser.palpite) {
+        const removeButton = document.createElement('button');
+        removeButton.id = 'remove-palpite-modal-btn';
+        removeButton.className = 'bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-md text-sm';
+        removeButton.textContent = 'Remover';
+        removeButton.addEventListener('click', handleRemovePalpite);
+        actionsContainer.appendChild(removeButton);
+    }
+}
+
+
 async function loadUsersForDropdown() {
     if (!supabaseClient) return; 
     try {
-        const { data: users, error } = await supabaseClient.from('user').select('id, name').order('name', { ascending: true }); // Corrigido: nome para name
+        const { data: users, error } = await supabaseClient.from('user').select('id, name').order('name', { ascending: true }); 
         if (error) throw error;
 
         const userSelect = document.getElementById('user-select');
@@ -150,7 +222,7 @@ async function loadUsersForDropdown() {
             if (user.id !== 0) { 
                 const option = document.createElement('option');
                 option.value = user.id;
-                option.textContent = user.name; // Corrigido: nome para name
+                option.textContent = user.name; 
                 userSelect.appendChild(option);
             }
         });
@@ -176,8 +248,8 @@ async function handleLoginRegister() {
         try {
             const { data: existingUser, error: checkError } = await supabaseClient 
                 .from('user')
-                .select('id, name') // Corrigido: nome para name
-                .eq('name', newUserName) // Corrigido: nome para name
+                .select('id, name') 
+                .eq('name', newUserName) 
                 .single();
 
             if (checkError && checkError.code !== 'PGRST116') { 
@@ -191,15 +263,15 @@ async function handleLoginRegister() {
 
             const { data, error } = await supabaseClient 
                 .from('user')
-                .insert([{ name: newUserName }]) // Corrigido: nome para name
+                .insert([{ name: newUserName }]) 
                 .select()
                 .single();
             
             if (error) throw error;
 
             if (data) {
-                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; // Corrigido: nome para name
-                alert(`Usuário ${data.name} cadastrado com sucesso!`); // Corrigido: nome para name
+                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; 
+                alert(`Usuário ${data.name} cadastrado com sucesso!`); 
             }
         } catch (error) {
             console.error('Erro ao registrar novo usuário:', error.message);
@@ -210,135 +282,68 @@ async function handleLoginRegister() {
         try {
             const { data, error } = await supabaseClient 
                 .from('user')
-                .select('id, name, palpite') // Corrigido: nome para name
+                .select('id, name, palpite') 
                 .eq('id', selectedUserId)
                 .single();
 
             if (error) throw error;
             if (data) {
-                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; // Corrigido: nome para name
+                currentUser = { id: data.id, name: data.name, palpite: data.palpite }; 
             } else if (selectedUserId === "0") { 
-                 currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
+                 currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
                  console.warn("Usuário anônimo (ID 0) não encontrado no banco. Usando default local.");
             }
         } catch (error) {
             console.error('Erro ao buscar usuário:', error.message);
-            currentUser = { id: 0, name: 'Anônimo', palpite: null }; // Corrigido: nome para name
+            currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
         }
     }
 
     const authUsernameSpan = document.getElementById('auth-username');
-    if (authUsernameSpan) authUsernameSpan.textContent = currentUser.name; // Corrigido: nome para name
+    if (authUsernameSpan) authUsernameSpan.textContent = currentUser.name; 
     
     toggleAuthModal();
     console.log('Usuário atual:', currentUser);
 
-    updatePalpiteSection();
+    updateUserPalpiteWidget(); 
     updateEnqueteSection(); 
     updateMuralSection();
     loadPalpites(); 
     loadMensagens(); 
 }
 
-function updatePalpiteSection() {
-    if (!palpiteInputArea || !userPalpiteDisplay) return;
-    palpiteInputArea.innerHTML = '';
-    userPalpiteDisplay.innerHTML = '';
+function updateUserPalpiteWidget() {
+    const palpiteWidget = document.getElementById('user-palpite-widget');
+    const palpiteDateDisplay = document.getElementById('user-palpite-date-display');
 
-    if (currentUser.id === 0) { 
-        palpiteInputArea.innerHTML = '<p class="text-sm text-gray-600">Identifique-se para registrar um palpite.</p>';
-        return;
+    if (!palpiteWidget || !palpiteDateDisplay) return;
+
+    if (currentUser.id !== 0 && currentUser.palpite) {
+        const date = new Date(currentUser.palpite);
+        date.setUTCDate(date.getUTCDate() + 1);
+        palpiteDateDisplay.textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        palpiteWidget.style.display = 'flex';
+    } else if (currentUser.id !== 0 && !currentUser.palpite) {
+        palpiteDateDisplay.textContent = 'Seu Palpite?';
+        palpiteWidget.style.display = 'flex';
     }
-
-    if (currentUser.palpite) {
-        const palpiteDate = new Date(currentUser.palpite);
-        userPalpiteDisplay.innerHTML = `
-            <p class="text-sm text-gray-700">Seu palpite: <strong class="text-indigo-600">${palpiteDate.toLocaleDateString('pt-BR', { timeZone: 'UTC' })}</strong></p>
-            <button id="remove-palpite-btn" class="text-xs text-red-500 hover:text-red-700 mt-1">Remover palpite</button>
-        `;
-        const removeBtn = document.getElementById('remove-palpite-btn');
-        if (removeBtn) removeBtn.addEventListener('click', handleRemovePalpite);
-    } else {
-        palpiteInputArea.innerHTML = `
-            <label for="palpite-date" class="block text-sm font-medium text-gray-700 mb-1">Data da divulgação (palpite):</label>
-            <div class="flex items-center space-x-2">
-                <input type="date" id="palpite-date" class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500">
-                <button id="submit-palpite-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-md text-sm">🎯</button>
-            </div>
-            <p class="text-xs text-gray-500 mt-1">Um palpite por usuário.</p>
-        `;
-        const submitBtn = document.getElementById('submit-palpite-btn');
-        if (submitBtn) submitBtn.addEventListener('click', handleSubmitPalpite);
+    else {
+        palpiteWidget.style.display = 'none';
     }
 }
 
-function updateEnqueteSection() {
-    if (!enqueteOptionsArea) return;
-    enqueteOptionsArea.innerHTML = '';
-    
-    (async () => { 
-        const userVote = currentUser.id !== 0 ? await checkIfUserVoted(currentUser.id) : null;
-
-        if (userVote && currentUser.id !== 0) { 
-            enqueteOptionsArea.innerHTML = `<p class="text-sm text-gray-700">Você já votou: <strong class="text-purple-600">${userVote}</strong>.</p>`;
-        } else { 
-            const form = document.createElement('form');
-            form.id = 'enquete-form';
-            form.className = 'space-y-2';
-            OPCOES_ENQUETE.forEach(opcao => { 
-                const div = document.createElement('div');
-                div.className = 'flex items-center';
-                const input = document.createElement('input');
-                input.type = 'radio';
-                input.id = `enquete-${opcao.toLowerCase().replace(/\s+/g, '-')}`;
-                input.name = 'enquete-voto';
-                input.value = opcao;
-                input.className = 'h-4 w-4 text-purple-600 border-gray-300 focus:ring-purple-500';
-                const label = document.createElement('label');
-                label.htmlFor = input.id;
-                label.textContent = opcao;
-                label.className = 'ml-2 block text-sm text-gray-900';
-                div.appendChild(input);
-                div.appendChild(label);
-                form.appendChild(div);
-            });
-            const submitButton = document.createElement('button');
-            submitButton.type = 'button'; 
-            submitButton.id = 'submit-enquete-btn';
-            submitButton.className = 'mt-3 bg-purple-600 hover:bg-purple-700 text-white font-semibold py-2 px-4 rounded-md text-sm';
-            submitButton.textContent = 'Votar';
-            submitButton.addEventListener('click', handleSubmitEnqueteVoto); 
-            form.appendChild(submitButton);
-            enqueteOptionsArea.appendChild(form);
-        }
-        loadEnqueteResults(); 
-    })();
-}
-
-function updateMuralSection() {
-    if (!muralPostArea) return;
-    muralPostArea.innerHTML = '';
-    muralPostArea.innerHTML = `
-        <textarea id="mural-message-input" rows="3" placeholder="Sua mensagem de otimismo (ou não)..." class="w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-teal-500 focus:border-teal-500 text-sm"></textarea>
-        <button id="submit-mural-message-btn" class="mt-2 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 px-4 rounded-md text-sm">Enviar Mensagem</button>
-    `;
-    const submitMsgBtn = document.getElementById('submit-mural-message-btn');
-    if(submitMsgBtn) submitMsgBtn.addEventListener('click', handleSubmitMuralMessage);
-}
-
-
-// --- Funções de Palpites ---
 const rankingDisplayArea = document.getElementById('ranking-display-area');
 const top3CountdownArea = document.getElementById('top3-countdown-area');
 
-async function handleSubmitPalpite() {
+async function handleSubmitPalpite() { 
     if (currentUser.id === 0) {
         alert('Você precisa estar identificado para registrar um palpite.');
-        toggleAuthModal();
+        togglePalpiteModal(); 
+        toggleAuthModal(); 
         return;
     }
 
-    const palpiteDateInput = document.getElementById('palpite-date');
+    const palpiteDateInput = document.getElementById('palpite-date-input');
     if (!palpiteDateInput || !palpiteDateInput.value) {
         alert('Por favor, selecione uma data para o seu palpite.');
         return;
@@ -357,9 +362,10 @@ async function handleSubmitPalpite() {
 
         if (data) {
             currentUser.palpite = data.palpite;
-            alert('Palpite registrado com sucesso!');
-            updatePalpiteSection();
+            alert('Palpite registrado/atualizado com sucesso!');
+            updateUserPalpiteWidget();
             loadPalpites(); 
+            togglePalpiteModal(); 
         }
     } catch (error) {
         console.error('Erro ao registrar palpite:', error.message);
@@ -367,7 +373,7 @@ async function handleSubmitPalpite() {
     }
 }
 
-async function handleRemovePalpite() {
+async function handleRemovePalpite() { 
     if (currentUser.id === 0 || !currentUser.palpite) return;
 
     if (!confirm('Tem certeza que deseja remover seu palpite?')) {
@@ -386,8 +392,9 @@ async function handleRemovePalpite() {
 
         currentUser.palpite = null;
         alert('Palpite removido com sucesso.');
-        updatePalpiteSection();
+        updateUserPalpiteWidget();
         loadPalpites(); 
+        togglePalpiteModal(); 
     } catch (error) {
         console.error('Erro ao remover palpite:', error.message);
         alert('Falha ao remover o palpite. Tente novamente.');
@@ -403,7 +410,7 @@ async function loadPalpites() {
     try {
         const { data: palpites, error } = await supabaseClient 
             .from('user')
-            .select('id, name, palpite') // Corrigido: nome para name
+            .select('id, name, palpite') 
             .not('palpite', 'is', null) 
             .order('palpite', { ascending: true }); 
 
@@ -444,7 +451,7 @@ function renderRanking(palpites) {
 
         listItem.innerHTML = `
             <div>
-                <span class="font-semibold">${medal}${p.name}</span> <!-- Corrigido: nome para name -->
+                <span class="font-semibold">${medal}${p.name}</span> 
             </div>
             <span class="text-gray-700">${palpiteDate.toLocaleDateString('pt-BR')}</span>
         `;
@@ -481,7 +488,7 @@ function renderTop3Countdowns(top3Palpites) {
         const countdownDiv = document.createElement('div');
         countdownDiv.className = 'mb-3 p-3 bg-orange-50 rounded-lg shadow';
         countdownDiv.innerHTML = `
-            <p class="text-sm font-medium text-orange-700">${index + 1}º: ${p.name} (${palpiteDate.toLocaleDateString('pt-BR')})</p> <!-- Corrigido: nome para name -->
+            <p class="text-sm font-medium text-orange-700">${index + 1}º: ${p.name} (${palpiteDate.toLocaleDateString('pt-BR')})</p> 
             <div id="countdown-top3-${p.id}" class="text-xs text-orange-600 flex flex-wrap justify-start gap-x-2 gap-y-1 mt-1">
                 <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-days" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Dias</span></div>
                 <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-hours" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Horas</span></div>
@@ -692,6 +699,51 @@ function renderEnqueteChart(resultados) {
 // --- Funções de Mensagens ---
 const muralMensagensDisplay = document.getElementById('mural-mensagens-display');
 
+async function handleDeleteMessage(messageId) {
+    if (currentUser.id === 0) {
+        // Anônimos não podem apagar mensagens, pois não são donos de nenhuma.
+        // Poderia mostrar um alerta, mas o botão nem deveria aparecer para eles.
+        return;
+    }
+    if (!confirm("Tem certeza que deseja apagar esta mensagem?")) {
+        return;
+    }
+    try {
+        const { error } = await supabaseClient
+            .from('messages')
+            .delete()
+            .eq('id', messageId)
+            .eq('user_id', currentUser.id); 
+
+        if (error) throw error;
+        alert("Mensagem apagada com sucesso!");
+        loadMensagens();
+    } catch (error) {
+        console.error("Erro ao apagar mensagem:", error.message);
+        alert("Falha ao apagar mensagem.");
+    }
+}
+
+async function handleMessageReaction(messageId, reactionType) {
+    if (currentUser.id === 0) {
+        alert("Você precisa estar logado para reagir às mensagens.");
+        toggleAuthModal();
+        return;
+    }
+    console.log(`Reação: ${reactionType} para mensagem ${messageId} por usuário ${currentUser.id}`);
+    alert(`Funcionalidade de '${reactionType}' ainda não implementada completamente no backend. Requer tabela 'message_reactions'.`);
+
+    const reactionButton = document.querySelector(`button[data-message-id='${messageId}'][data-reaction='${reactionType}']`);
+    if (reactionButton) {
+        const countSpan = reactionButton.querySelector('span');
+        if (countSpan) {
+            let currentCount = parseInt(countSpan.textContent) || 0;
+            countSpan.textContent = currentCount + 1; 
+        }
+    }
+}
+
+
 async function handleSubmitMuralMessage() {
     const messageInput = document.getElementById('mural-message-input');
     if (!messageInput) return;
@@ -704,8 +756,8 @@ async function handleSubmitMuralMessage() {
 
     try {
         const { error } = await supabaseClient 
-            .from('messages') // Corrigido: message para messages
-            .insert([{ user_id: currentUser.id, message: messageText }]); // Corrigido: menssage para message
+            .from('messages') 
+            .insert([{ user_id: currentUser.id, message: messageText }]); 
         
         if (error) throw error;
 
@@ -727,14 +779,14 @@ async function loadMensagens() {
     }
     try {
         const { data: messages, error } = await supabaseClient 
-            .from('messages') // Corrigido: message para messages
+            .from('messages') 
             .select(`
                 id,
                 created_at,
                 message, 
                 user_id,
                 user (name) 
-            `) // Corrigido: menssage para message, user(nome) para user(name)
+            `) 
             .order('created_at', { ascending: false })
             .limit(50); 
 
@@ -758,16 +810,36 @@ function renderMensagens(messages) {
 
     messages.forEach(msg => {
         const messageDiv = document.createElement('div');
-        messageDiv.className = 'p-3 rounded-md shadow-sm text-sm';
+        messageDiv.className = 'p-3 rounded-md shadow-sm text-sm mb-3'; 
         
-        const authorName = (msg.user && msg.user.name) ? msg.user.name : 'Anônimo'; // Corrigido: nome para name
+        const authorName = (msg.user && msg.user.name) ? msg.user.name : 'Anônimo'; 
         const messageDate = new Date(msg.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
+        let deleteButtonHTML = '';
+        if (currentUser.id !== 0 && msg.user_id === currentUser.id) { // Botão de apagar só para usuário logado e dono da msg
+            deleteButtonHTML = `<button class="delete-message-btn text-red-500 hover:text-red-700 text-xs ml-2" data-message-id="${msg.id}">🗑️ Apagar</button>`;
+        }
+        
+        const reactionsHTML = `
+            <div class="mt-2 pt-2 border-t border-gray-200 flex items-center space-x-3">
+                <button class="reaction-btn text-gray-500 hover:text-green-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="like">
+                    👍 <span class="ml-1">0</span>
+                </button>
+                <button class="reaction-btn text-gray-500 hover:text-red-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="dislike">
+                    👎 <span class="ml-1">0</span>
+                </button>
+            </div>
+        `;
+
         messageDiv.innerHTML = `
-            <p class="break-words whitespace-pre-wrap">${msg.message}</p> <!-- Corrigido: menssage para message -->
-            <p class="text-xs text-gray-500 mt-1 text-right">
+            <div class="flex justify-between items-start">
+                <p class="break-words whitespace-pre-wrap flex-grow">${msg.message}</p>
+                ${deleteButtonHTML}
+            </div>
+            <p class="text-xs text-gray-500 mt-1">
                 – <span class="font-medium">${authorName}</span> em ${messageDate}
             </p>
+            ${reactionsHTML} 
         `;
 
         if (msg.user_id === currentUser.id && currentUser.id !== 0) { 
@@ -776,6 +848,21 @@ function renderMensagens(messages) {
             messageDiv.classList.add('bg-gray-50');
         }
         muralMensagensDisplay.appendChild(messageDiv);
+    });
+
+    document.querySelectorAll('.delete-message-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const messageId = e.target.closest('button').dataset.messageId;
+            handleDeleteMessage(messageId);
+        });
+    });
+    document.querySelectorAll('.reaction-btn').forEach(button => {
+        button.addEventListener('click', (e) => {
+            const btn = e.target.closest('button');
+            const messageId = btn.dataset.messageId;
+            const reactionType = btn.dataset.reaction;
+            handleMessageReaction(messageId, reactionType);
+        });
     });
 }
 

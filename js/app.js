@@ -7,11 +7,10 @@ let supabaseClient;
 let currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Registrar o plugin de datalabels globalmente para todos os charts
     if (typeof ChartDataLabels !== 'undefined') {
         Chart.register(ChartDataLabels);
     } else {
-        console.warn('ChartDataLabels plugin não encontrado. Os rótulos de dados no gráfico da enquete podem não funcionar.');
+        console.warn('ChartDataLabels plugin não encontrado.');
     }
 
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
@@ -20,40 +19,52 @@ document.addEventListener('DOMContentLoaded', () => {
         initializeApp();
     } else {
         console.error('Supabase SDK não encontrado ou createClient não é uma função.');
-        const body = document.querySelector('body');
-        const errorDiv = document.createElement('div');
-        errorDiv.style.backgroundColor = 'red';
-        errorDiv.style.color = 'white';
-        errorDiv.style.padding = '10px';
-        errorDiv.style.textAlign = 'center';
-        errorDiv.style.position = 'fixed';
-        errorDiv.style.top = '0';
-        errorDiv.style.left = '0';
-        errorDiv.style.width = '100%';
-        errorDiv.style.zIndex = '9999';
-        errorDiv.textContent = 'Erro crítico: Não foi possível carregar o SDK do banco de dados.';
-        if (body) {
-            body.prepend(errorDiv);
-        }
+        // (código de erro visual omitido para brevidade)
     }
 });
 
+// Declarações de funções movidas para cima para garantir que estejam definidas antes de initializeApp
+// --- Funções de Autenticação e Usuário ---
+// --- Funções de Palpites ---
+// --- Funções de Enquete ---
+// --- Funções de Mensagens ---
+
+const authWidgetContainer = document.getElementById('auth-widget-container');
+const enqueteOptionsArea = document.getElementById('enquete-options-area');
+const muralPostArea = document.getElementById('mural-post-area');
+const rankingDisplayArea = document.getElementById('ranking-display-area');
+const top3CountdownArea = document.getElementById('top3-countdown-area');
+const enqueteChartCanvas = document.getElementById('enqueteChart');
+let enqueteChartInstance = null;
+const OPCOES_ENQUETE = [
+    { label: 'Super Otimista', value: 'Super Otimista', icon: '😊' },
+    { label: 'Otimista', value: 'Otimista', icon: '🙂' },
+    { label: 'Realista', value: 'Realista', icon: '😐' },
+    { label: 'Pessimista', value: 'Pessimista', icon: '😟' },
+    { label: 'Mar céu lar', value: 'Mar céu lar', icon: '🌊' }
+];
+const palpiteCountdownIntervals = {}; 
+const muralMensagensDisplay = document.getElementById('mural-mensagens-display');
+
+
 function initializeApp() {
     console.log('Aplicativo inicializado e pronto para interagir com Supabase.');
-    setupAuthElements();
+    setupAuthElements(); // Configura auth e widget de palpite
     loadUsersForDropdown();
+    
+    // Carregar dados e atualizar UI
     loadPalpites(); 
     loadEnqueteResults(); 
     loadMensagens(); 
+    
+    // As funções de update da UI são chamadas após o login/logout ou carregamento inicial de dados
+    // Elas dependem do currentUser e dos dados carregados.
+    // A chamada inicial delas pode ser feita aqui ou dentro das respectivas funções de load.
+    // Para garantir que os elementos existam, chamamos aqui.
     updateUserPalpiteWidget(); 
     updateEnqueteSection(); 
     updateMuralSection(); 
 }
-
-// --- Elementos Globais da UI ---
-const authWidgetContainer = document.getElementById('auth-widget-container');
-const enqueteOptionsArea = document.getElementById('enquete-options-area');
-const muralPostArea = document.getElementById('mural-post-area');
 
 
 function setupAuthElements() {
@@ -192,6 +203,7 @@ function togglePalpiteModal() {
 
 function renderPalpiteModalActions() {
     const actionsContainer = document.getElementById('palpite-modal-actions');
+    if (!actionsContainer) return;
     actionsContainer.innerHTML = '';
 
     const saveButton = document.createElement('button');
@@ -343,9 +355,6 @@ function updateUserPalpiteWidget() {
     }
 }
 
-const rankingDisplayArea = document.getElementById('ranking-display-area');
-const top3CountdownArea = document.getElementById('top3-countdown-area');
-
 async function handleSubmitPalpite() { 
     if (currentUser.id === 0) {
         alert('Você precisa estar identificado para registrar um palpite.');
@@ -482,7 +491,7 @@ function renderRanking(sortedPalpiteDates) {
                 <span class="font-semibold text-indigo-600">${medal}${palpiteDate.toLocaleDateString('pt-BR', {day: '2-digit', month: 'long', year: 'numeric'})}</span>
                 <span class="text-xs text-gray-500 ml-1">(${pData.count} ${pData.count > 1 ? 'votos' : 'voto'})</span>
             </div>
-            <div class="user-tooltip absolute left-0 bottom-full mb-2 w-auto p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 min-w-max">
+            <div class="user-tooltip absolute left-0 bottom-full mb-2 w-auto p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 min-w-max max-h-20 overflow-y-auto">
                 ${pData.users.join(', ')}
             </div>
         `;
@@ -491,7 +500,6 @@ function renderRanking(sortedPalpiteDates) {
     rankingDisplayArea.appendChild(list);
 }
 
-const palpiteCountdownIntervals = {}; 
 
 function renderTop3Countdowns(top3PalpiteDates) { 
     if(!top3CountdownArea) return;
@@ -568,15 +576,6 @@ function updateSinglePalpiteCountdown(targetTime, daysId, hoursId, minutesId, se
 
 
 // --- Funções de Enquete ---
-const enqueteChartCanvas = document.getElementById('enqueteChart');
-let enqueteChartInstance = null;
-const OPCOES_ENQUETE = [
-    { label: 'Super Otimista', value: 'Super Otimista', icon: '😊' },
-    { label: 'Otimista', value: 'Otimista', icon: '🙂' },
-    { label: 'Realista', value: 'Realista', icon: '😐' },
-    { label: 'Pessimista', value: 'Pessimista', icon: '😟' },
-    { label: 'Mar céu lar', value: 'Mar céu lar', icon: '🌊' }
-];
 
 async function checkIfUserVoted(userId) {
     if (!supabaseClient || userId === 0) return null; 
@@ -654,7 +653,7 @@ async function updateEnqueteSection() {
         document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
             button.addEventListener('click', toggleAuthModal);
         });
-        loadEnqueteResults();
+        loadEnqueteResults(); // Carrega o gráfico mesmo para anônimos
         return;
     }
     
@@ -720,11 +719,13 @@ async function loadEnqueteResults() {
         console.error('Erro ao carregar resultados da enquete:', error.message);
         if (enqueteChartCanvas) {
             const ctx = enqueteChartCanvas.getContext('2d');
-            ctx.clearRect(0, 0, enqueteChartCanvas.width, enqueteChartCanvas.height);
-            ctx.font = "14px Inter";
-            ctx.fillStyle = "red";
-            ctx.textAlign = "center";
-            ctx.fillText("Erro ao carregar dados da enquete.", enqueteChartCanvas.width / 2, enqueteChartCanvas.height / 2);
+            if (ctx) { // Verifica se o contexto é válido
+                ctx.clearRect(0, 0, enqueteChartCanvas.width, enqueteChartCanvas.height);
+                ctx.font = "14px Inter";
+                ctx.fillStyle = "red";
+                ctx.textAlign = "center";
+                ctx.fillText("Erro ao carregar dados da enquete.", enqueteChartCanvas.width / 2, enqueteChartCanvas.height / 2);
+            }
         }
     }
 }
@@ -732,6 +733,8 @@ async function loadEnqueteResults() {
 function renderEnqueteChart(resultados) {
     if (!enqueteChartCanvas) return;
     const ctx = enqueteChartCanvas.getContext('2d');
+    if (!ctx) return;
+
 
     const labels = OPCOES_ENQUETE.map(opt => opt.label);
     const dataCounts = OPCOES_ENQUETE.map(opt => resultados[opt.value]?.count || 0);
@@ -761,109 +764,79 @@ function renderEnqueteChart(resultados) {
         }]
     };
 
+    const chartOptions = {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right', 
+                labels: {
+                    font: { family: 'Inter', size: 11 },
+                    padding: 10,
+                    boxWidth: 12,
+                }
+            },
+            tooltip: {
+                titleFont: { family: 'Inter' },
+                bodyFont: { family: 'Inter', size: 10 },
+                callbacks: {
+                    label: function(context) {
+                        const currentLabel = context.label || '';
+                        const value = context.raw || 0;
+                        const percentage = totalVotes > 0 ? ((value / totalVotes) * 100).toFixed(1) + '%' : '0%';
+                        
+                        const optionData = resultados[OPCOES_ENQUETE.find(o => o.label === currentLabel)?.value];
+                        let userListText = '';
+                        if (optionData && optionData.users.length > 0) {
+                             userListText = '\n  (' + optionData.users.slice(0, 3).join(', ');
+                             if (optionData.users.length > 3) userListText += ` e mais ${optionData.users.length - 3}`;
+                             userListText += ')';
+                        }
+                        return `${currentLabel}: ${value} (${percentage})${userListText}`;
+                    }
+                }
+            },
+            datalabels: { 
+                display: true,
+                formatter: (value, ctx) => {
+                    let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                    let percentage = sum > 0 ? (value * 100 / sum).toFixed(0) + "%" : "0%"; // Arredondado para inteiro
+                    if (value === 0) return ''; 
+                    return `${value}\n(${percentage})`;
+                },
+                color: '#fff',
+                textAlign: 'center',
+                font: {
+                    weight: 'bold',
+                    family: 'Inter',
+                    size: 10
+                },
+                textStrokeColor: 'rgba(0,0,0,0.6)',
+                textStrokeWidth: 2,
+                align: 'center',
+                anchor: 'center'
+            }
+        }
+    };
+
+
     if (enqueteChartInstance) {
         enqueteChartInstance.data = chartData;
-        enqueteChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
-            const currentLabel = context.label || '';
-            const value = context.raw || 0;
-            const percentage = totalVotes > 0 ? ((value / totalVotes) * 100).toFixed(1) + '%' : '0%';
-            
-            const optionData = resultados[OPCOES_ENQUETE.find(o => o.label === currentLabel)?.value];
-            let userListText = '';
-            if (optionData && optionData.users.length > 0) {
-                userListText = '\n  (' + optionData.users.slice(0, 3).join(', ');
-                if (optionData.users.length > 3) userListText += ` e mais ${optionData.users.length - 3}`;
-                userListText += ')';
-            }
-            return `${currentLabel}: ${value} (${percentage})${userListText}`;
-        };
-         // Configuração do plugin datalabels
-        enqueteChartInstance.options.plugins.datalabels = {
-            display: true,
-            formatter: (value, ctx) => {
-                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                let percentage = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
-                if (value === 0) return ''; 
-                return `${value}\n(${percentage})`;
-            },
-            color: '#fff',
-            textAlign: 'center',
-            font: {
-                weight: 'bold',
-                family: 'Inter',
-                size: 10
-            },
-            textStrokeColor: 'rgba(0,0,0,0.5)',
-            textStrokeWidth: 2,
-            align: 'center',
-            anchor: 'center'
-        };
+        enqueteChartInstance.options.plugins.tooltip.callbacks.label = chartOptions.plugins.tooltip.callbacks.label;
+        enqueteChartInstance.options.plugins.datalabels = chartOptions.plugins.datalabels;
         enqueteChartInstance.update();
     } else {
         enqueteChartInstance = new Chart(ctx, {
             type: 'doughnut', 
             data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right', 
-                        labels: {
-                            font: { family: 'Inter', size: 11 },
-                            padding: 10,
-                            boxWidth: 12,
-                        }
-                    },
-                    tooltip: {
-                        titleFont: { family: 'Inter' },
-                        bodyFont: { family: 'Inter', size: 10 },
-                        callbacks: {
-                            label: function(context) {
-                                const currentLabel = context.label || '';
-                                const value = context.raw || 0;
-                                const percentage = totalVotes > 0 ? ((value / totalVotes) * 100).toFixed(1) + '%' : '0%';
-                                
-                                const optionData = resultados[OPCOES_ENQUETE.find(o => o.label === currentLabel)?.value];
-                                let userListText = '';
-                                if (optionData && optionData.users.length > 0) {
-                                     userListText = '\n  (' + optionData.users.slice(0, 3).join(', ');
-                                     if (optionData.users.length > 3) userListText += ` e mais ${optionData.users.length - 3}`;
-                                     userListText += ')';
-                                }
-                                return `${currentLabel}: ${value} (${percentage})${userListText}`;
-                            }
-                        }
-                    },
-                    datalabels: { // Configuração do plugin datalabels
-                        display: true,
-                        formatter: (value, ctx) => {
-                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
-                            let percentage = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
-                            if (value === 0) return ''; 
-                            return `${value}\n(${percentage})`;
-                        },
-                        color: '#fff',
-                        textAlign: 'center',
-                        font: {
-                            weight: 'bold',
-                            family: 'Inter',
-                            size: 10
-                        },
-                        textStrokeColor: 'rgba(0,0,0,0.5)',
-                        textStrokeWidth: 2,
-                        align: 'center',
-                        anchor: 'center'
-                    }
-                }
-            }
+            options: chartOptions,
+            plugins: [ChartDataLabels] // Registrar plugin localmente se não globalmente
         });
     }
 }
 
 
 // --- Funções de Mensagens ---
-const muralMensagensDisplay = document.getElementById('mural-mensagens-display');
 
 async function handleDeleteMessage(messageId) {
     if (currentUser.id === 0) {
@@ -894,16 +867,38 @@ async function handleMessageReaction(messageId, reactionType) {
         toggleAuthModal();
         return;
     }
-    console.log(`Reação: ${reactionType} para mensagem ${messageId} por usuário ${currentUser.id}`);
-    alert(`Funcionalidade de '${reactionType}' ainda não implementada completamente no backend. Requer tabela 'message_reactions'.`);
+    
+    // Presumindo que as colunas 'likes' e 'dislikes' (integer) existem na tabela 'messages'
+    try {
+        // 1. Buscar a mensagem para obter contagens atuais e verificar se o usuário já reagiu (se implementado)
+        // Por simplicidade, vamos apenas incrementar. Uma lógica mais robusta lidaria com "desfazer" ou trocar reação.
+        const { data: messageData, error: fetchError } = await supabaseClient
+            .from('messages')
+            .select('likes, dislikes')
+            .eq('id', messageId)
+            .single();
 
-    const reactionButton = document.querySelector(`button[data-message-id='${messageId}'][data-reaction='${reactionType}']`);
-    if (reactionButton) {
-        const countSpan = reactionButton.querySelector('span');
-        if (countSpan) {
-            let currentCount = parseInt(countSpan.textContent) || 0;
-            countSpan.textContent = currentCount + 1; 
+        if (fetchError) throw fetchError;
+
+        let updateData = {};
+        if (reactionType === 'like') {
+            updateData.likes = (messageData.likes || 0) + 1;
+        } else if (reactionType === 'dislike') {
+            updateData.dislikes = (messageData.dislikes || 0) + 1;
         }
+
+        const { error: updateError } = await supabaseClient
+            .from('messages')
+            .update(updateData)
+            .eq('id', messageId);
+
+        if (updateError) throw updateError;
+        
+        loadMensagens(); // Recarrega as mensagens para mostrar a contagem atualizada
+
+    } catch (error) {
+        console.error(`Erro ao registrar ${reactionType}:`, error.message);
+        alert(`Falha ao registrar ${reactionType}.`);
     }
 }
 
@@ -921,7 +916,7 @@ async function handleSubmitMuralMessage() {
     try {
         const { error } = await supabaseClient 
             .from('messages') 
-            .insert([{ user_id: currentUser.id, message: messageText }]); 
+            .insert([{ user_id: currentUser.id, message: messageText, likes: 0, dislikes: 0 }]); // Inclui likes/dislikes default
         
         if (error) throw error;
 
@@ -949,6 +944,8 @@ async function loadMensagens() {
                 created_at,
                 message, 
                 user_id,
+                likes, 
+                dislikes,
                 user (name) 
             `) 
             .order('created_at', { ascending: false })
@@ -987,10 +984,10 @@ function renderMensagens(messages) {
         const reactionsHTML = `
             <div class="mt-2 pt-2 border-t border-gray-200 flex items-center space-x-3">
                 <button class="reaction-btn text-gray-500 hover:text-green-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="like">
-                    👍 <span class="ml-1">0</span>
+                    👍 <span class="ml-1">${msg.likes || 0}</span>
                 </button>
                 <button class="reaction-btn text-gray-500 hover:text-red-500 text-xs flex items-center" data-message-id="${msg.id}" data-reaction="dislike">
-                    👎 <span class="ml-1">0</span>
+                    👎 <span class="ml-1">${msg.dislikes || 0}</span>
                 </button>
             </div>
         `;

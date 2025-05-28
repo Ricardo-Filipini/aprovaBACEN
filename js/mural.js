@@ -67,16 +67,45 @@
                     arquivoContexto = await responseFile.text();
                 } catch (fileError) {
                     console.warn("Não foi possível carregar o arquivo de contexto Conversa_do_WhatsApp_G200_BCB.txt. Usando prompt genérico.", fileError);
-                    // Pode-se optar por não gerar mensagem ou usar um prompt padrão caso o arquivo não seja encontrado/carregado
                 }
 
-                const prompt = `Com base no seguinte contexto de conversas de um grupo de WhatsApp de aprovados no Cadastro Reserva do concurso de Auditor do Banco Central (BACEN), deve ser gerado uma única mensagem de tom humorado ou náo, sendo motivacional ou de desespero. baseado na conversa: 
+                // Buscar histórico de mensagens do Supabase
+                let historicoMensagens = "";
+                try {
+                    if (supabaseClient) {
+                        const { data: messages, error } = await supabaseClient
+                            .from('messages')
+                            .select('message')
+                            .order('created_at', { ascending: false })
+                            .limit(10); // Pega as últimas 10 mensagens para contexto
+
+                        if (error) {
+                            console.warn("Erro ao buscar histórico de mensagens do Supabase:", error.message);
+                        } else if (messages && messages.length > 0) {
+                            historicoMensagens = messages.map(msg => msg.message).join("\n");
+                        }
+                    }
+                } catch (dbError) {
+                    console.warn("Erro ao buscar histórico de mensagens do Supabase:", dbError.message);
+                }
+
+                const prompt = `Com base no seguinte contexto de conversas de um grupo de WhatsApp de aprovados no Cadastro Reserva do concurso de Auditor do Banco Central (BACEN), e também no histórico de mensagens já enviadas no mural, deve ser gerado uma única mensagem de tom humorado ou não, sendo motivacional ou de desespero.
+                
+                Contexto da conversa do WhatsApp:
                 ---
                 ${arquivoContexto}
                 ---
+
+                Histórico de mensagens recentes do mural (evite repetir ideias já presentes aqui):
+                ---
+                ${historicoMensagens}
+                ---
+
                 Crie uma e apenas mensagem curta (máximo 2-3 frases), que seja motivacional ou de desespero bem-humorada, refletindo os temas e o tom das conversas do grupo, para ser usada no mural de mensagens. Pense na ansiedade e esperança do momento.
                 
-                Não precisa introduzir sua resposta, apenas coloque o texto da mensagem diretamente, pode utilizar emojis.`;
+                Não precisa introduzir sua resposta, apenas coloque o texto da mensagem diretamente, pode utilizar emojis.
+                
+                Procure utilizar argumentos presentes na conversa do WhatsApp, e tente manter um tom engraçado, mas evite repetir o que já foi dito no mural.`;
 
                 const result = await model.generateContent(prompt);
                 const response = await result.response;

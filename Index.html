@@ -219,10 +219,14 @@
             background-color: white;
             padding: 2rem;
             border-radius: 0.5rem;
-            max-width: 500px;
-            width: 90%;
+            max-width: 90%;
+            width: auto;
+            min-width: 300px; /* Minimum width for smaller modals */
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
+        }
+        .modal-content-lg { /* For larger modals like the rave chart */
+             max-width: 800px;
         }
         .modal-close {
             position: absolute;
@@ -291,14 +295,24 @@
             vertical-align: middle;
         }
         .reason-icon {
-            font-size: 1.5rem; /* Ajustado para emojis */
+            font-size: 1.5rem; 
             margin-right: 0.75rem;
             flex-shrink: 0;
             line-height: 1;
         }
         .reason-card h3 {
             display: flex;
-            align-items: center; /* Alinha ícone e texto verticalmente */
+            align-items: center; 
+        }
+        #raveChartContainer {
+            height: 50vh; /* Default height */
+            max-height: 450px;
+        }
+        @media (min-width: 768px) { /* md breakpoint */
+            #raveChartContainer {
+                height: 60vh;
+                max-height: 500px;
+            }
         }
     </style>
 </head>
@@ -383,13 +397,23 @@
         </section>
         
         <section id="reasons-for-200" class="mb-12 animate-on-scroll">
-            <h2 class="text-3xl font-bold text-center text-blue-700 mb-4"><span class="section-title-icon">📢</span>200 Motivos (ou Quase!) para Chamar o Cadastro Reserva do BACEN</h2>
+            <h2 class="text-3xl font-bold text-center text-blue-700 mb-4"><span class="section-title-icon">🧐</span>200 Motivos (ou Quase!) para Chamar o Cadastro Reserva do BACEN</h2>
             <p class="text-center text-gray-600 mb-10">Argumentos técnicos, estratégicos, urgentes e alguns... nem tanto, compilados dos anseios dos aprovados e da realidade do Banco Central.</p>
             <div id="reasons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 </div>
             <div class="text-center mt-8">
                 <button id="loadMoreReasons" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-colors">Carregar Mais Motivos</button>
             </div>
+        </section>
+
+        <section id="rave-chart-trigger-section" class="card text-center animate-on-scroll">
+            <h2 class="text-2xl font-semibold text-blue-700 mb-3"><span class="section-title-icon">💬</span>Termômetro da Conversa G200</h2>
+            <p class="text-gray-700 leading-relaxed mb-6">
+                Visualize a frequência dos termos mais discutidos no grupo de WhatsApp "G200 BCB" ao longo do tempo. Uma forma de sentir a "temperatura" e os temas quentes da comunidade de aprovados.
+            </p>
+            <button id="openRaveChartModal" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors mx-auto">
+                Analisar Emoções da Conversa (Rave Chart)
+            </button>
         </section>
 
         <section id="intro-details" class="card mb-12 animate-on-scroll">
@@ -492,16 +516,32 @@
 
     <div id="premiseModal" class="modal">
         <div class="modal-content">
-            <span class="modal-close" onclick="closeModal()">&times;</span>
+            <span class="modal-close" onclick="closeModal('premiseModal')">&times;</span>
             <h3 id="modalTitle" class="text-xl font-semibold mb-3">Premissas do Cenário</h3>
             <p id="modalText" class="text-sm text-gray-700 leading-relaxed"></p>
+        </div>
+    </div>
+
+    <div id="raveChartModal" class="modal">
+        <div class="modal-content modal-content-lg">
+            <span class="modal-close" onclick="closeModal('raveChartModal')">&times;</span>
+            <h3 class="text-2xl font-semibold text-blue-700 mb-2 text-center">💬 Termômetro da Conversa G200</h3>
+            <p id="raveChartPeriod" class="text-center text-gray-600 mb-4">Mês: <span class="font-semibold">Janeiro 2025</span></p>
+            <div id="raveChartContainer" class="chart-container">
+                <canvas id="termFrequencyChart"></canvas>
+            </div>
+            <div class="flex justify-center mt-4 space-x-3">
+                <button id="prevMonthRave" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l">‹ Mês Anterior</button>
+                <button id="nextMonthRave" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r">Próximo Mês ›</button>
+            </div>
+            <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência simulados para demonstração.</p>
         </div>
     </div>
 
     <button onclick="scrollToTop()" id="toTopBtn" title="Voltar ao Topo">↑</button>
 
     <script>
-        // ANCHOR: Observer for scroll animations
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
         const observer = new IntersectionObserver((entries) => {
             entries.forEach(entry => {
                 if (entry.isIntersecting) {
@@ -509,12 +549,8 @@
                 }
             });
         }, { threshold: 0.05 });
-
-        const animatedElements = document.querySelectorAll('.animate-on-scroll');
         animatedElements.forEach(el => observer.observe(el));
 
-
-        // ANCHOR: Reasons for 200 vagas
         const allReasons = [
             { title: "Déficit Histórico de Servidores", text: "O BCB está com o pior déficit de servidores da sua história, sem concurso desde 2014. Apenas 100 vagas preenchem somente 3,9% da vacância de Auditores.", category: "critical", icon: "📉" },
             { title: "Atraso de Projetos Importantes", text: "65% dos projetos de inovação e regulamentação (DREX, PIX, nova lei cambial) atrasaram em 2023 por falta de pessoal e orçamento.", category: "critical", icon: "⏰" },
@@ -527,7 +563,7 @@
             { title: "'Fuga de Cérebros' para Outros Concursos", text: "Muitos aprovados no BACEN também passaram em outros concursos (BNDES, CNU), e podem não assumir se a convocação demorar.", category: "critical", icon: "🏃" },
             { title: "Pressão do FMI e Bloomberg", text: "Relatórios de instituições como FMI e notícias em veículos como Bloomberg destacam o encolhimento do BC e os riscos para a supervisão, reforçando a urgência.", category: "critical", icon: "🚨" },
             { title: "Reforma Tributária e PIX Cashback", text: "Hiago (22/01/2025): A reforma tributária implantará cashback via PIX, aumentando a demanda no BCB.", category: "technical", icon: "💡" },
-            { title: "Compromisso da Diretoria", text: "Luana (19/02/2025): Diretor de Administração (Rodrigo) reafirmou compromisso de solicitar ao MGI a convocação de todos os aprovados.", category: "technical", icon: "🗣️" },
+            { title: "Compromisso da Diretoria (Rodrigo)", text: "Luana (19/02/2025): Diretor de Administração (Rodrigo) reafirmou compromisso de solicitar ao MGI a convocação de todos os aprovados.", category: "technical", icon: "🗣️" },
             { title: "Até o FMI Concorda!", text: "Anônimo (20/02/2025): 'FMI diz que BCB precisa de mais gente'. Se até eles estão falando...", category: "humor", icon: "🌍" },
             { title: "Autonomia do BCB (PEC)", text: "A PEC de autonomia financeira e administrativa pode demandar mais pessoal para a nova estrutura e responsabilidades.", category: "technical", icon: "📜" },
             { title: "DREX e Falta de Recursos", text: "Anônimo (28/02/2025): 'Falta de recursos/pessoal já impediu novos casos de uso no DREX.' Mais gente para o DREX decolar!", category: "critical", icon: "💸" },
@@ -558,7 +594,12 @@
             { title: "Paz Mundial e Fim das Guerras", text: "Anônimo (08/05/2025): 'A convocação dos 200 do CR do BACEN é a resposta para a paz mundial. Se chamar, acabam as guerras.'", category: "humor", icon: "🕊️" },
             { title: "Papai GG e Mamãe Esther", text: "Adaptação (09/05/2025): 'Papai GG já fez a parte dele, agora é com Mamãe Esther para liberar a autorização.'", category: "humor", icon: "👨‍👩‍👧‍👦" },
             { title: "Para Parar de Dar F5 no SEI", text: "Geral (recorrente): 'A nomeação é a única forma de liberar os aprovados da tortura de atualizar o SEI e o DOU a cada 5 minutos.'", category: "humor", icon: "🤖" },
-            { title: "Se o Marcelo Otimista Acredita...", text: "Adaptação (11/03/2025): 'Se até o Marcelo (nos seus raros momentos de otimismo) acredita, então VAI ACONTECER!'", category: "humor", icon: "🥳" }
+            { title: "Se o Marcelo Otimista Acredita...", text: "Adaptação (11/03/2025): 'Se até o Marcelo (nos seus raros momentos de otimismo) acredita, então VAI ACONTECER!'", category: "humor", icon: "🥳" },
+            { title: "Para Evitar o 'Drexit'", text: "Anônimo (24/05/2025): 'Para evitar o 'Drexit' (fuga de talentos do DREX para outros projetos/órgãos) chamem os 200!'", category: "humor", icon: "🚪" },
+            { title: "Porque o Estagiário do MGI Precisa de Ajuda", text: "Anônimo (27/05/2025): 'O processo do BACEN no SEI está com tantas idas e vindas que o estagiário do MGI claramente precisa de reforços (os 200!) para dar conta.'", category: "humor", icon: "😵" },
+            { title: "Para o Lula Assinar Algo Positivo", text: "Anônimo (26/05/2025): 'Com tantas notícias de corte no orçamento, o Lula precisa de uma pauta positiva. Autorizar 200 vagas no BACEN é perfeito!'", category: "humor", icon: "👍" },
+            { title: "Para Calibrar a Ansiedade do Grupo", text: "Geral (27/05/2025): 'A nomeação é a única forma de calibrar a ansiedade do grupo, que já está em níveis estratosféricos.'", category: "humor", icon: "🎢" },
+            { title: "Evitar o 'Efeito Mandela' no BACEN", text: "Anônimo (24/04/2025): 'Para que ninguém no futuro diga 'Lembro que o BACEN tinha servidores suficientes', chamem os 200 e evitem o Efeito Mandela!'", category: "humor", icon: "🤔" }
         ];
         let reasonsLoaded = 0;
         const reasonsPerLoad = 9;
@@ -584,21 +625,20 @@
                     <p class="text-sm">${reason.text}</p>
                 `;
                 reasonsGrid.appendChild(cardDiv);
-                observer.observe(cardDiv); // ANCHOR: Observe new card
             });
             reasonsLoaded += toLoad.length;
             if (reasonsLoaded >= allReasons.length) {
                 loadMoreButton.style.display = 'none';
             }
+            
+            const newAnimatedElements = reasonsGrid.querySelectorAll('.animate-on-scroll:not(.is-visible)');
+            newAnimatedElements.forEach(el => observer.observe(el));
         }
         
-        if (loadMoreButton) {
-            loadMoreButton.addEventListener('click', loadReasons);
-            loadReasons(); // Initial load of reasons
-        }
+        loadMoreButton.addEventListener('click', loadReasons);
+        loadReasons();
 
 
-        // ANCHOR: Chart.js and Countdown Logic
         function wrapText(text, maxLength) {
             if (typeof text !== 'string' || text.length <= maxLength) {
                 return text;
@@ -619,57 +659,54 @@
         }
 
         const initialPhaseChartCtx = document.getElementById('initialPhaseChart').getContext('2d');
-        if (initialPhaseChartCtx) {
-            const initialPhaseChart = new Chart(initialPhaseChartCtx, {
-                type: 'bar',
-                data: {
-                    labels: [wrapText('RFB: Autuação até SGP/DICOP', 16), wrapText('BACEN: Autuação até SGP/DICOP', 16)],
-                    datasets: [{
-                        label: 'Lead Time (dias)',
-                        data: [121, 1],
-                        backgroundColor: ['#60A5FA', '#34D399'],
-                        borderColor: ['#3B82F6', '#10B981'],
-                        borderWidth: 1
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    indexAxis: 'y',
-                    scales: { x: { beginAtZero: true, title: { display: true, text: 'Dias' } } },
-                    plugins: {
-                        legend: { display: false },
-                        title: { display: true, text: 'Tempo para Chegada na Análise Técnica Principal (SGP)' },
-                        tooltip: {
-                            callbacks: {
-                                title: function(tooltipItems) {
-                                    const item = tooltipItems[0];
-                                    let label = item.chart.data.labels[item.dataIndex];
-                                    if (Array.isArray(label)) { return label.join(' '); }
-                                    return label;
-                                }
-                            }
-                        }
-                    },
-                    onClick: (event, elements) => {
-                        if (elements.length > 0) {
-                            const clickedIndex = elements[0].index;
-                            if (clickedIndex === 0) { 
-                                const section = document.getElementById('rfb-process');
-                                if (section) section.scrollIntoView({ behavior: 'smooth' });
-                            } else if (clickedIndex === 1) { 
-                                const section = document.getElementById('bacen-process-details');
-                                if (section) section.scrollIntoView({ behavior: 'smooth' });
+        const initialPhaseChart = new Chart(initialPhaseChartCtx, {
+            type: 'bar',
+            data: {
+                labels: [wrapText('RFB: Autuação até SGP/DICOP', 16), wrapText('BACEN: Autuação até SGP/DICOP', 16)],
+                datasets: [{
+                    label: 'Lead Time (dias)',
+                    data: [121, 1],
+                    backgroundColor: ['#60A5FA', '#34D399'],
+                    borderColor: ['#3B82F6', '#10B981'],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                indexAxis: 'y',
+                scales: { x: { beginAtZero: true, title: { display: true, text: 'Dias' } } },
+                plugins: {
+                    legend: { display: false },
+                    title: { display: true, text: 'Tempo para Chegada na Análise Técnica Principal (SGP)' },
+                    tooltip: {
+                        callbacks: {
+                            title: function(tooltipItems) {
+                                const item = tooltipItems[0];
+                                let label = item.chart.data.labels[item.dataIndex];
+                                if (Array.isArray(label)) { return label.join(' '); }
+                                return label;
                             }
                         }
                     }
+                },
+                onClick: (event, elements) => {
+                    if (elements.length > 0) {
+                        const clickedIndex = elements[0].index;
+                        if (clickedIndex === 0) { 
+                            document.getElementById('rfb-process').scrollIntoView({ behavior: 'smooth' });
+                        } else if (clickedIndex === 1) { 
+                            document.getElementById('bacen-process-details').scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
                 }
-            });
-        }
+            }
+        });
 
         const BACEN_OTIMISTA_INTERVAL_DAYS = 20;
         const BACEN_REALISTA_INTERVAL_DAYS = 30;
         const BACEN_PESSIMISTA_INTERVAL_DAYS = 45;
+
 
         const targetDatesDivulg = { 
             optimistic: new Date(2025, 4, 29, 23, 59, 59).getTime(), 
@@ -683,21 +720,19 @@
             pessimistic: targetDatesDivulg.pessimistic + (BACEN_PESSIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000) 
         };
 
+
         function formatDateForDisplay(dateTimestamp) {
             const date = new Date(dateTimestamp);
             const options = { year: 'numeric', month: 'long', day: 'numeric' };
             return date.toLocaleDateString('pt-BR', options);
         }
 
-        if(document.getElementById('opt-divulg-date-text')) {
-            document.getElementById('opt-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.optimistic);
-            document.getElementById('opt-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.optimistic);
-            document.getElementById('real-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.realistic);
-            document.getElementById('real-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.realistic);
-            document.getElementById('pess-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.pessimistic);
-            document.getElementById('pess-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.pessimistic);
-        }
-
+        document.getElementById('opt-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.optimistic);
+        document.getElementById('opt-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.optimistic);
+        document.getElementById('real-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.realistic);
+        document.getElementById('real-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.realistic);
+        document.getElementById('pess-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.pessimistic);
+        document.getElementById('pess-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.pessimistic);
 
         function updateSingleCountdown(targetTime, daysId, hoursId, minutesId, secondsId, timerClass) {
             const now = new Date().getTime();
@@ -734,7 +769,6 @@
             updateSingleCountdown(targetDatesPub[scenario], `${scenario.substring(0,3)}-pub-days`, `${scenario.substring(0,3)}-pub-hours`, `${scenario.substring(0,3)}-pub-minutes`, `${scenario.substring(0,3)}-pub-seconds`, 'secondary-countdown-timer');
         });
 
-        // ANCHOR: Scenario Button Logic
         const scenarioButtons = document.querySelectorAll('.scenario-button');
         const projectionCards = {
             optimistic: document.getElementById('projection-optimistic'),
@@ -748,14 +782,13 @@
                 const selectedScenario = button.dataset.scenario;
                 
                 Object.values(projectionCards).forEach(card => {
-                    if(card) { // Check if card exists
-                        card.classList.add('hidden');
-                        card.style.gridColumn = ''; 
-                    }
+                    card.classList.add('hidden');
+                    card.style.gridColumn = ''; 
                 });
 
                 if (projectionCards[selectedScenario]) {
                     projectionCards[selectedScenario].classList.remove('hidden');
+                    
                     if (window.innerWidth >= 768) { 
                         projectionCards[selectedScenario].style.gridColumn = 'md:col-start-2 md:col-span-1';
                     } else {
@@ -765,19 +798,19 @@
             });
         });
         
-        if (projectionCards.optimistic) { // Check if optimistic card exists
-            if (window.innerWidth >= 768) {
-                projectionCards.optimistic.style.gridColumn = 'md:col-start-2 md:col-span-1';
-            }
-            Object.values(projectionCards).forEach(card => {
-                if(card && card.id !== 'projection-optimistic') {
-                    card.classList.add('hidden');
-                }
-            });
+        
+        if (window.innerWidth >= 768) {
+            projectionCards.optimistic.style.gridColumn = 'md:col-start-2 md:col-span-1';
         }
+         Object.values(projectionCards).forEach(card => {
+            if (card.id !== 'projection-optimistic') {
+                card.classList.add('hidden');
+            }
+        });
 
-        // ANCHOR: Modal Logic
-        const modal = document.getElementById('premiseModal');
+
+        const modalPremise = document.getElementById('premiseModal');
+        const modalRave = document.getElementById('raveChartModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalText = document.getElementById('modalText');
         const premiseTexts = {
@@ -788,36 +821,125 @@
         document.querySelectorAll('.info-icon').forEach(icon => {
             icon.addEventListener('click', (e) => {
                 const scenario = e.target.dataset.premise;
-                if (modalTitle) modalTitle.textContent = `Premissas do Cenário ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`;
-                if (modalText) modalText.innerHTML = premiseTexts[scenario];
-                if (modal) modal.classList.add('open');
+                modalTitle.textContent = `Premissas do Cenário ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`;
+                modalText.innerHTML = premiseTexts[scenario];
+                modalPremise.classList.add('open');
             });
         });
-        function closeModal() {
-            if (modal) modal.classList.remove('open');
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('open');
         }
-        if (modal) {
-            modal.addEventListener('click', (e) => {
-                if (e.target === modal) closeModal(); 
-            });
-        }
-        
-        // ANCHOR: To Top Button
+        modalPremise.addEventListener('click', (e) => {
+            if (e.target === modalPremise) closeModal('premiseModal'); 
+        });
+         modalRave.addEventListener('click', (e) => {
+            if (e.target === modalRave) closeModal('raveChartModal');
+        });
+
+
         const toTopBtn = document.getElementById("toTopBtn");
-        if (toTopBtn) {
-            window.onscroll = function() {scrollFunction()};
-            function scrollFunction() {
-              if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-                toTopBtn.style.display = "block";
-              } else {
-                toTopBtn.style.display = "none";
-              }
-            }
-            function scrollToTop() {
-              window.scrollTo({top: 0, behavior: 'smooth'});
-            }
-            toTopBtn.addEventListener('click', scrollToTop); // Ensure event listener is added
+        window.onscroll = function() {scrollFunction()};
+        function scrollFunction() {
+          if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+            toTopBtn.style.display = "block";
+          } else {
+            toTopBtn.style.display = "none";
+          }
         }
+        function scrollToTop() {
+          window.scrollTo({top: 0, behavior: 'smooth'});
+        }
+
+        // Rave Chart Logic
+        const openRaveChartButton = document.getElementById('openRaveChartModal');
+        const raveChartPeriodEl = document.getElementById('raveChartPeriod').querySelector('span');
+        let termFrequencyChartInstance;
+        let currentMonthIndex = 0;
+
+        const simulatedTermData = {
+            "2025-01": { "ansiedade": 60, "MGI": 40, "nomeação": 50, "Galípolo": 20, "esperança": 70, "boato": 30, "Marcelo": 10, "prazo": 25 },
+            "2025-02": { "ansiedade": 75, "MGI": 55, "nomeação": 65, "Esther": 30, "esperança": 60, "boato": 45, "PEC": 20, "Marcelo": 25, "SEI": 30 },
+            "2025-03": { "ansiedade": 50, "MGI": 70, "nomeação": 80, "Galípolo": 40, "Esther": 50, "esperança": 80, "boato": 60, "PEC": 35, "SEI": 50, "DOU": 20, "Marcelo": 5 },
+            "2025-04": { "ansiedade": 40, "MGI": 60, "nomeação": 70, "Galípolo": 60, "Esther": 70, "esperança": 90, "boato": 30, "PEC": 25, "SEI": 60, "DOU": 40, "ofício": 50, "Marcelo": 2 },
+            "2025-05": { "ansiedade": 85, "MGI": 80, "nomeação": 95, "Galípolo": 75, "Esther": 85, "esperança": 50, "boato": 70, "PEC": 15, "SEI": 90, "DOU": 70, "ofício": 80, "Marcelo": 40, "autorização": 90 }
+        };
+        const monthsOrder = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05"];
+        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio"];
+
+        function updateRaveChart(monthIndex) {
+            const periodKey = monthsOrder[monthIndex];
+            const dataForPeriod = simulatedTermData[periodKey] || {};
+            const terms = Object.keys(dataForPeriod);
+            const frequencies = Object.values(dataForPeriod);
+
+            raveChartPeriodEl.textContent = `${monthNames[monthIndex]} 2025`;
+
+            const chartData = {
+                labels: terms.map(term => wrapText(term, 12)),
+                datasets: [{
+                    label: 'Frequência dos Termos',
+                    data: frequencies,
+                    backgroundColor: terms.map((_, i) => `hsl(${(i * 360 / terms.length)}, 70%, 60%)`), // Dynamic colors
+                    borderColor: terms.map((_, i) => `hsl(${(i * 360 / terms.length)}, 70%, 40%)`),
+                    borderWidth: 1
+                }]
+            };
+
+            if (termFrequencyChartInstance) {
+                termFrequencyChartInstance.data = chartData;
+                termFrequencyChartInstance.update();
+            } else {
+                const ctx = document.getElementById('termFrequencyChart').getContext('2d');
+                termFrequencyChartInstance = new Chart(ctx, {
+                    type: 'bar', // Horizontal bar chart for better label readability
+                    data: chartData,
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        scales: {
+                            x: { beginAtZero: true, title: { display: true, text: 'Frequência (Contagem Simulada)'} },
+                            y: { ticks: { autoSkip: false } }
+                        },
+                        plugins: {
+                            legend: { display: false },
+                            title: { display: false },
+                            tooltip: {
+                                callbacks: {
+                                    title: function(tooltipItems) {
+                                        const item = tooltipItems[0];
+                                        let label = item.chart.data.labels[item.dataIndex];
+                                        if (Array.isArray(label)) { return label.join(' '); }
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        }
+
+        openRaveChartButton.addEventListener('click', () => {
+            currentMonthIndex = monthsOrder.length -1; // Start with the latest month
+            updateRaveChart(currentMonthIndex);
+            modalRave.classList.add('open');
+        });
+
+        document.getElementById('prevMonthRave').addEventListener('click', () => {
+            if (currentMonthIndex > 0) {
+                currentMonthIndex--;
+                updateRaveChart(currentMonthIndex);
+            }
+        });
+
+        document.getElementById('nextMonthRave').addEventListener('click', () => {
+            if (currentMonthIndex < monthsOrder.length - 1) {
+                currentMonthIndex++;
+                updateRaveChart(currentMonthIndex);
+            }
+        });
+
     </script>
 </body>
 </html>

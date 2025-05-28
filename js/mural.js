@@ -70,11 +70,13 @@
                     // Pode-se optar por não gerar mensagem ou usar um prompt padrão caso o arquivo não seja encontrado/carregado
                 }
 
-                const prompt = `Com base no seguinte contexto de conversas de um grupo de WhatsApp de aprovados no Cadastro Reserva do concurso de Auditor do Banco Central (BACEN): 
+                const prompt = `Com base no seguinte contexto de conversas de um grupo de WhatsApp de aprovados no Cadastro Reserva do concurso de Auditor do Banco Central (BACEN), deve ser gerado uma única mensagem de tom humorado ou náo, sendo motivacional ou de desespero. baseado na conversa: 
                 ---
                 ${arquivoContexto}
                 ---
-                Crie uma mensagem curta (máximo 2-3 frases), que seja motivacional ou de desespero bem-humorada, refletindo os temas e o tom das conversas do grupo, para ser usada no mural de mensagens. Pense na ansiedade e esperança do momento.`;
+                Crie uma e apenas mensagem curta (máximo 2-3 frases), que seja motivacional ou de desespero bem-humorada, refletindo os temas e o tom das conversas do grupo, para ser usada no mural de mensagens. Pense na ansiedade e esperança do momento.
+                
+                Não precisa introduzir sua resposta, apenas coloque o texto da mensagem diretamente, pode utilizar emojis.`;
 
                 const result = await model.generateContent(prompt);
                 const response = await result.response;

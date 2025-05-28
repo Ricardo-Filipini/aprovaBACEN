@@ -50,5 +50,5 @@ window.aprovaBACEN = {
     palpiteCountdownIntervals: {},
     // Configurações da API Gemini
     GEMINI_API_KEY: "AIzaSyDra9z6e2OM_Bapj89BXQTxKIROycCWAyw", // Chave fornecida pelo usuário
-    GEMINI_MODEL_NAME: "gemini-1.5-flash-latest" // Modelo atualizado conforme documentação (gemini-2.0-flash não existe)
+    GEMINI_MODEL_NAME: "models/gemini-2.5-flash-preview-05-20" // Modelo atualizado conforme documentação (gemini-2.0-flash não existe)
 };

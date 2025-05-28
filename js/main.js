@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const contentArea = document.getElementById('content-area');
     const mainNavLinks = document.querySelectorAll('#main-nav a');
-    const initialSection = 'inicio.html'; // Seção a ser carregada inicialmente
+    const initialSection = 'palpites_contagem.html'; // Nova seção inicial
 
     // Função para carregar o conteúdo da seção
     async function loadSection(sectionUrl) {
@@ -13,26 +13,27 @@ document.addEventListener('DOMContentLoaded', () => {
                 throw new Error(`HTTP error! status: ${response.status} ao carregar ${sectionUrl}`);
             }
             const html = await response.text();
-            console.log(`HTML recebido para ${sectionUrl}:`, html.substring(0, 500) + (html.length > 500 ? "..." : "")); // Log do HTML recebido (primeiros 500 chars)
+            // console.log(`HTML recebido para ${sectionUrl}:`, html.substring(0, 200) + "..."); // Log de depuração reduzido ou removido
             
             if (contentArea) {
-                console.log("Elemento contentArea encontrado. Inserindo HTML...");
+                // console.log("Elemento contentArea encontrado. Inserindo HTML..."); // Log de depuração removido
                 contentArea.innerHTML = html;
             } else {
-                console.error("Elemento contentArea (com ID 'content-area') NÃO foi encontrado no DOM. Não é possível carregar a seção.");
-                return; // Interrompe se a área de conteúdo não existe
+                console.error("CRITICAL: Elemento #content-area NÃO foi encontrado no DOM. Não é possível carregar seções.");
+                return; 
             }
             
             setActiveLink(sectionUrl);
-            // Após carregar o HTML, inicializa os scripts específicos da seção, se houver
             initializeSectionScripts(sectionUrl);
-            // Reativa os ícones Lucide se a nova seção os utilizar
+            
             if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
+                lucide.createIcons(); // Garante que ícones em novo conteúdo sejam renderizados
             }
         } catch (error) {
-            console.error('Erro ao carregar a seção:', error);
-            contentArea.innerHTML = `<p class="text-red-500 text-center">Erro ao carregar o conteúdo. Tente novamente mais tarde.</p>`;
+            console.error(`Erro ao carregar a seção ${sectionUrl}:`, error);
+            if (contentArea) { // Verifica se contentArea existe antes de tentar usá-lo
+                contentArea.innerHTML = `<p class="text-red-500 text-center p-4">Erro ao carregar a seção '${sectionUrl}'. Verifique o console para mais detalhes.</p>`;
+            }
         }
     }
 
@@ -70,12 +71,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Função para inicializar scripts específicos de cada seção
     function initializeSectionScripts(sectionUrl) {
-        // Remove listeners antigos para evitar duplicidade, se necessário (mais complexo)
-        // Por ora, chamaremos as funções de inicialização diretamente
+        // console.log(`Tentando inicializar scripts para: ${sectionUrl}`); // Log de depuração removido
         switch (sectionUrl) {
-            case 'inicio.html':
-                if (typeof initInicioSection === 'function') initInicioSection();
-                break;
+            // case 'inicio.html': // Removido pois sections/inicio.html será removida
+            // if (typeof initInicioSection === 'function') initInicioSection();
+            // break;
             case 'palpites_contagem.html':
                 if (typeof initPalpitesSection === 'function') initPalpitesSection();
                 break;
@@ -99,16 +99,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Carrega a seção inicial ou a definida pelo hash na URL
     const hashSection = window.location.hash.substring(1);
+    // Garante que setupGlobalUserIdentification seja chamado uma vez que o DOM principal está pronto.
+    // Isso já é feito no script inline do Index.html, mas podemos garantir aqui também se necessário,
+    // embora o DOMContentLoaded do Index.html seja o local mais apropriado.
+    if (typeof setupGlobalUserIdentification === 'function' && !document.body.dataset.globalIdentSetup) {
+         // setupGlobalUserIdentification(); // Chamado no Index.html
+         document.body.dataset.globalIdentSetup = 'true'; // Evita múltiplas chamadas
+    }
+
     loadSection(hashSection || initialSection);
 });
 
-// Funções de inicialização de seção (serão definidas em interactive.js ou outros arquivos)
-// Exemplo:
-// function initInicioSection() { console.log('Seção Início Carregada e Scripts Inicializados'); }
-// function initPalpitesSection() { console.log('Seção Palpites Carregada e Scripts Inicializados'); }
-// etc.
-
-// Funções globais que podem ser usadas por várias seções (ex: manipulação de datas, UI)
+// Funções globais que podem ser usadas por várias seções
 function formatDate(dateString) {
     if (!dateString) return 'N/A';
     const date = new Date(dateString);

@@ -27,13 +27,30 @@
             <h1 class="text-3xl md:text-4xl font-bold text-slate-800">Infográfico Interativo BACEN</h1>
             <p class="text-slate-600 text-lg">Controle a Ansiedade do Cadastro de Reserva!</p>
             <!-- Mensagem de boas-vindas ao usuário (será preenchida via JS) -->
-            <div id="welcome-user-message" class="mt-4 text-xl font-medium text-blue-700"></div>
+            <div id="welcome-user-message" class="mt-2 text-xl font-medium text-blue-700"></div>
+            
+            <!-- Novo Componente de Identificação Global -->
+            <div id="global-user-identification" class="my-4 p-4 bg-blue-100 border border-blue-300 rounded-lg text-sm text-blue-800 flex flex-wrap items-center justify-center gap-4">
+                <span id="global-user-display" class="font-semibold">Logado como: Anônimo</span>
+                <div class="flex items-center gap-2">
+                    <label for="user-select-dropdown" class="sr-only">Escolher usuário:</label>
+                    <select id="user-select-dropdown" class="p-2 border border-blue-400 rounded-md bg-white text-sm">
+                        <!-- Opções preenchidas por JS -->
+                    </select>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="global-nome-usuario" class="sr-only">Ou digite seu nome:</label>
+                    <input type="text" id="global-nome-usuario" placeholder="Seu nome para identificar" class="p-2 border border-blue-400 rounded-md text-sm" style="width: auto;">
+                    <button id="btn-global-identificar" class="btn btn-secondary btn-sm py-2 px-3 text-sm">
+                        <i data-lucide="user-check" class="lucide-icon mr-1 h-4 w-4"></i>Identificar
+                    </button>
+                </div>
+            </div>
         </header>
 
         <nav id="main-nav" class="mb-8">
             <ul>
-                <li><a href="#inicio.html" class="active">Início & Identificação</a></li>
-                <li><a href="#palpites_contagem.html">Palpites & Contagem</a></li>
+                <li><a href="#palpites_contagem.html" class="active">Palpites & Contagem</a></li>
                 <li><a href="#enquete_otimismo.html">Enquete de Otimismo</a></li>
                 <li><a href="#mural_mensagens.html">Mural de Mensagens</a></li>
                 <li><a href="#motivos_autorizacao.html">Motivos para Autorização</a></li>
@@ -62,10 +79,21 @@
     <script src="js/main.js"></script>
     
     <script>
-        // Ativação inicial do Lucide Icons
-        lucide.createIcons();
-        // Atualiza o ano no rodapé
-        document.getElementById('currentYear').textContent = new Date().getFullYear();
+        document.addEventListener('DOMContentLoaded', () => {
+            // Ativação inicial do Lucide Icons
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            // Atualiza o ano no rodapé
+            const currentYearEl = document.getElementById('currentYear');
+            if (currentYearEl) {
+                currentYearEl.textContent = new Date().getFullYear();
+            }
+            // Configura a identificação global do usuário
+            if (typeof setupGlobalUserIdentification === 'function') {
+                setupGlobalUserIdentification();
+            }
+        });
     </script>
 </body>
 </html>

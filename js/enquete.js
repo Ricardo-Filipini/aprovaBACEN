@@ -300,13 +300,25 @@
                 const columnDiv = document.createElement('div');
                 columnDiv.className = 'p-3 bg-gray-50 rounded-lg shadow';
                 
+                const titleContainer = document.createElement('div');
+                titleContainer.className = 'flex justify-between items-center mb-2';
+
                 const title = document.createElement('h4');
-                title.className = 'font-semibold text-gray-700 mb-2 flex items-center';
+                title.className = 'font-semibold text-gray-700 flex items-center';
                 title.innerHTML = `<span class="mr-2 text-lg">${opcao.icon}</span> ${opcao.label}`;
-                columnDiv.appendChild(title);
+                
+                const expandButton = document.createElement('button');
+                expandButton.className = 'text-gray-500 hover:text-gray-700 text-lg';
+                expandButton.innerHTML = '➕'; // Ícone para expandir
+                expandButton.setAttribute('aria-expanded', 'false');
+                expandButton.setAttribute('title', 'Mostrar/Ocultar lista de usuários');
+
+                titleContainer.appendChild(title);
+                titleContainer.appendChild(expandButton);
+                columnDiv.appendChild(titleContainer);
 
                 const userList = document.createElement('ul');
-                userList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1';
+                userList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1 hidden'; // Adicionado 'hidden'
                 
                 const usersForOption = sentimentosAgrupados[opcao.value]?.users || [];
                 if (usersForOption.length > 0) {
@@ -322,6 +334,13 @@
                     userList.appendChild(listItem);
                 }
                 columnDiv.appendChild(userList);
+
+                expandButton.addEventListener('click', () => {
+                    const isExpanded = userList.classList.toggle('hidden');
+                    expandButton.innerHTML = isExpanded ? '➕' : '➖';
+                    expandButton.setAttribute('aria-expanded', !isExpanded);
+                });
+
                 gridContainer.appendChild(columnDiv);
             });
 
@@ -329,13 +348,25 @@
             const indecisosColumnDiv = document.createElement('div');
             indecisosColumnDiv.className = 'p-3 bg-gray-50 rounded-lg shadow';
             
+            const indecisosTitleContainer = document.createElement('div');
+            indecisosTitleContainer.className = 'flex justify-between items-center mb-2';
+
             const indecisosTitle = document.createElement('h4');
-            indecisosTitle.className = 'font-semibold text-gray-700 mb-2 flex items-center';
+            indecisosTitle.className = 'font-semibold text-gray-700 flex items-center';
             indecisosTitle.innerHTML = `<span class="mr-2 text-lg">🤔</span> Indecisos`;
-            indecisosColumnDiv.appendChild(indecisosTitle);
+
+            const indecisosExpandButton = document.createElement('button');
+            indecisosExpandButton.className = 'text-gray-500 hover:text-gray-700 text-lg';
+            indecisosExpandButton.innerHTML = '➕';
+            indecisosExpandButton.setAttribute('aria-expanded', 'false');
+            indecisosExpandButton.setAttribute('title', 'Mostrar/Ocultar lista de usuários');
+
+            indecisosTitleContainer.appendChild(indecisosTitle);
+            indecisosTitleContainer.appendChild(indecisosExpandButton);
+            indecisosColumnDiv.appendChild(indecisosTitleContainer);
 
             const indecisosUserList = document.createElement('ul');
-            indecisosUserList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1';
+            indecisosUserList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1 hidden'; // Adicionado 'hidden'
 
             if (usuariosIndecisos.length > 0) {
                 usuariosIndecisos.forEach(userName => {
@@ -350,6 +381,13 @@
                 indecisosUserList.appendChild(listItem);
             }
             indecisosColumnDiv.appendChild(indecisosUserList);
+
+            indecisosExpandButton.addEventListener('click', () => {
+                const isExpanded = indecisosUserList.classList.toggle('hidden');
+                indecisosExpandButton.innerHTML = isExpanded ? '➕' : '➖';
+                indecisosExpandButton.setAttribute('aria-expanded', !isExpanded);
+            });
+
             gridContainer.appendChild(indecisosColumnDiv);
 
             displayArea.appendChild(gridContainer);

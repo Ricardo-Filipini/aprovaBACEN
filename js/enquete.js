@@ -151,10 +151,35 @@
                         }
                     }
                 });
-                app.enquete.renderEnqueteChart(resultados);
+                // app.enquete.renderEnqueteChart(resultados); // Movido para depois de buscar todos os usuários
+
+                // Buscar todos os usuários para identificar os indecisos
+                const { data: allUsers, error: allError } = await supabaseClient
+                    .from('user')
+                    .select('id, name, voto');
+
+                if (allError) throw allError;
+
+                const usuariosVotantesIds = new Set(usersComVotos.map(u => u.id)); // Supondo que usersComVotos tenha 'id'
+                // Se usersComVotos não tiver ID, precisaremos ajustar a lógica de como identificar quem votou.
+                // Por agora, vamos assumir que a query de usersComVotos pode ser ajustada para incluir 'id' ou que 'name' é único e suficiente.
+                // Para uma melhor abordagem, a query de usersComVotos deveria ser: .select('id, name, voto')
+
+                // Ajuste na query de usersComVotos para incluir ID, se não estiver lá:
+                // Esta é uma correção conceitual, a query original já pega 'name' e 'voto'.
+                // A query para usersComVotos já é: .select('name, voto').not('voto', 'is', null);
+                // Para identificar indecisos corretamente, precisamos de todos os usuários e seus votos.
+                // A query `allUsers` já faz isso.
+
+                const usuariosIndecisos = allUsers.filter(user => user.voto === null || user.voto === undefined)
+                                                 .map(user => user.name || 'Anônimo');
+
+
+                app.enquete.renderEnqueteChart(resultados); // Renderiza o gráfico primeiro
+                app.enquete.renderUserSentimentDisplay(resultados, usuariosIndecisos); // Depois renderiza a lista de usuários
 
             } catch (error) {
-                console.error('Erro ao carregar resultados da enquete da tabela user:', error.message);
+                console.error('Erro ao carregar resultados da enquete ou lista de usuários:', error.message);
                 if (app.uiElements.enqueteChartCanvas) {
                     const ctx = app.uiElements.enqueteChartCanvas.getContext('2d');
                     if (ctx) {
@@ -257,6 +282,77 @@
                 data: chartData,
                 options: chartOptions
             });
+        },
+
+        renderUserSentimentDisplay: function(sentimentosAgrupados, usuariosIndecisos) {
+            const displayArea = document.getElementById('user-sentiment-breakdown');
+            if (!displayArea) {
+                console.error("Elemento user-sentiment-breakdown não encontrado.");
+                return;
+            }
+            displayArea.innerHTML = ''; // Limpa a área antes de renderizar
+
+            const gridContainer = document.createElement('div');
+            gridContainer.className = 'grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm';
+
+            // Colunas para cada sentimento
+            OPCOES_ENQUETE.forEach(opcao => {
+                const columnDiv = document.createElement('div');
+                columnDiv.className = 'p-3 bg-gray-50 rounded-lg shadow';
+                
+                const title = document.createElement('h4');
+                title.className = 'font-semibold text-gray-700 mb-2 flex items-center';
+                title.innerHTML = `<span class="mr-2 text-lg">${opcao.icon}</span> ${opcao.label}`;
+                columnDiv.appendChild(title);
+
+                const userList = document.createElement('ul');
+                userList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1';
+                
+                const usersForOption = sentimentosAgrupados[opcao.value]?.users || [];
+                if (usersForOption.length > 0) {
+                    usersForOption.forEach(userName => {
+                        const listItem = document.createElement('li');
+                        listItem.textContent = userName;
+                        userList.appendChild(listItem);
+                    });
+                } else {
+                    const listItem = document.createElement('li');
+                    listItem.className = 'text-gray-400 italic';
+                    listItem.textContent = 'Ninguém por enquanto.';
+                    userList.appendChild(listItem);
+                }
+                columnDiv.appendChild(userList);
+                gridContainer.appendChild(columnDiv);
+            });
+
+            // Coluna para Indecisos
+            const indecisosColumnDiv = document.createElement('div');
+            indecisosColumnDiv.className = 'p-3 bg-gray-50 rounded-lg shadow';
+            
+            const indecisosTitle = document.createElement('h4');
+            indecisosTitle.className = 'font-semibold text-gray-700 mb-2 flex items-center';
+            indecisosTitle.innerHTML = `<span class="mr-2 text-lg">🤔</span> Indecisos`;
+            indecisosColumnDiv.appendChild(indecisosTitle);
+
+            const indecisosUserList = document.createElement('ul');
+            indecisosUserList.className = 'list-disc list-inside text-gray-600 space-y-1 pl-1';
+
+            if (usuariosIndecisos.length > 0) {
+                usuariosIndecisos.forEach(userName => {
+                    const listItem = document.createElement('li');
+                    listItem.textContent = userName;
+                    indecisosUserList.appendChild(listItem);
+                });
+            } else {
+                const listItem = document.createElement('li');
+                listItem.className = 'text-gray-400 italic';
+                listItem.textContent = 'Ninguém por enquanto.';
+                indecisosUserList.appendChild(listItem);
+            }
+            indecisosColumnDiv.appendChild(indecisosUserList);
+            gridContainer.appendChild(indecisosColumnDiv);
+
+            displayArea.appendChild(gridContainer);
         }
     };
 

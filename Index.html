@@ -313,6 +313,11 @@
             font-weight: 500;
             transition: background-color 0.2s;
             margin: 0 0.25rem;
+            display: inline-flex; /* For icon and text alignment */
+            align-items: center; /* For icon and text alignment */
+        }
+        .race-chart-controls button .button-icon {
+            margin-right: 0.35rem;
         }
         .race-chart-controls button:hover {
             background-color: #93C5FD; /* Blue-400 */
@@ -416,17 +421,17 @@
 
         <section id="race-chart-section" class="card mb-12 animate-on-scroll">
             <h2 class="text-2xl font-semibold text-blue-700 mb-2 text-center"><span class="section-title-icon">💬</span>Termômetro da Conversa G200: A Emoção em Gráfico</h2>
-            <p class="text-center text-gray-600 mb-4">Visualize a frequência (simulada) dos termos mais discutidos no grupo ao longo dos meses.</p>
+            <p class="text-center text-gray-600 mb-4">Visualize a frequência dos termos mais discutidos no grupo ao longo dos meses.</p>
             <p id="raceChartPeriod" class="text-center text-lg font-semibold text-blue-600 mb-4">Mês: <span class="font-bold">Janeiro 2025</span></p>
             <div id="raceChartParentContainer">
                 <canvas id="termRaceChart"></canvas>
             </div>
             <div class="race-chart-controls flex justify-center mt-6 space-x-2">
-                <button id="prevMonthRaceBtn" class="scenario-button">‹ Mês Anterior</button>
+                <button id="prevMonthRaceBtn" class="scenario-button"><span class="button-icon">‹</span>Mês Anterior</button>
                 <button id="playPauseRaceBtn" class="scenario-button"><span class="button-icon">▶️</span>Play</button>
-                <button id="nextMonthRaceBtn" class="scenario-button">Próximo Mês ›</button>
+                <button id="nextMonthRaceBtn" class="scenario-button">Próximo Mês<span class="button-icon ml-2">›</span></button>
             </div>
-            <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência simulados para demonstração da dinâmica.</p>
+            <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência para demonstração da dinâmica.</p>
         </section>
 
         <section id="intro-details" class="card mb-12 animate-on-scroll">
@@ -823,7 +828,10 @@
             });
         });
         function closeModal(modalId) {
-            document.getElementById(modalId).classList.remove('open');
+            const modalToClose = document.getElementById(modalId);
+            if (modalToClose) {
+                 modalToClose.classList.remove('open');
+            }
         }
         modalPremise.addEventListener('click', (e) => {
             if (e.target === modalPremise) closeModal('premiseModal'); 
@@ -850,18 +858,19 @@
         const playPauseRaceBtn = document.getElementById('playPauseRaceBtn');
         const prevMonthRaceBtn = document.getElementById('prevMonthRaceBtn');
         const nextMonthRaceBtn = document.getElementById('nextMonthRaceBtn');
+        let showingCumulative = false;
 
         const termColors = {
-            "ansiedade": "rgba(255, 99, 132, 0.8)", "MGI": "rgba(54, 162, 235, 0.8)", "nomeação": "rgba(75, 192, 192, 0.8)",
-            "Galípolo": "rgba(255, 206, 86, 0.8)", "Esther": "rgba(153, 102, 255, 0.8)", "esperança": "rgba(255, 159, 64, 0.8)",
-            "boato": "rgba(201, 203, 207, 0.8)", "Marcelo": "rgba(255, 99, 71, 0.8)", "prazo": "rgba(0, 206, 209, 0.8)",
-            "PEC": "rgba(255, 215, 0, 0.8)", "SEI": "rgba(138, 43, 226, 0.8)", "DOU": "rgba(127, 255, 0, 0.8)",
-            "ofício": "rgba(210, 105, 30, 0.8)", "autorização": "rgba(60, 179, 113, 0.8)", "default": "rgba(200, 200, 200, 0.8)"
+            "ansiedade": "rgba(255, 99, 132, 0.85)", "MGI": "rgba(54, 162, 235, 0.85)", "nomeação": "rgba(75, 192, 192, 0.85)",
+            "Galípolo": "rgba(255, 206, 86, 0.85)", "Esther": "rgba(153, 102, 255, 0.85)", "esperança": "rgba(255, 159, 64, 0.85)",
+            "boato": "rgba(100, 100, 100, 0.85)", "Marcelo": "rgba(255, 99, 71, 0.85)", "prazo": "rgba(0, 206, 209, 0.85)",
+            "PEC": "rgba(255, 215, 0, 0.85)", "SEI": "rgba(138, 43, 226, 0.85)", "DOU": "rgba(127, 255, 0, 0.85)",
+            "ofício": "rgba(210, 105, 30, 0.85)", "autorização": "rgba(60, 179, 113, 0.85)", "default": "rgba(200, 200, 200, 0.85)"
         };
          const termBorderColors = {
             "ansiedade": "rgba(255, 99, 132, 1)", "MGI": "rgba(54, 162, 235, 1)", "nomeação": "rgba(75, 192, 192, 1)",
             "Galípolo": "rgba(255, 206, 86, 1)", "Esther": "rgba(153, 102, 255, 1)", "esperança": "rgba(255, 159, 64, 1)",
-            "boato": "rgba(201, 203, 207, 1)", "Marcelo": "rgba(255, 99, 71, 1)", "prazo": "rgba(0, 206, 209, 1)",
+            "boato": "rgba(80, 80, 80, 1)", "Marcelo": "rgba(255, 99, 71, 1)", "prazo": "rgba(0, 206, 209, 1)",
             "PEC": "rgba(255, 215, 0, 1)", "SEI": "rgba(138, 43, 226, 1)", "DOU": "rgba(127, 255, 0, 1)",
             "ofício": "rgba(210, 105, 30, 1)", "autorização": "rgba(60, 179, 113, 1)", "default": "rgba(180, 180, 180, 1)"
         };
@@ -876,12 +885,12 @@
             "2025-02": [
                 { term: "ansiedade", frequency: 75 }, { term: "MGI", frequency: 55 }, { term: "nomeação", frequency: 65 },
                 { term: "Esther", frequency: 30 }, { term: "esperança", frequency: 60 }, { term: "boato", frequency: 45 },
-                { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}, {term: "Galípolo", frequency: 22}
+                { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}, {term: "Galípolo", frequency: 22}, {term: "autorização", frequency: 5}
             ],
             "2025-03": [
                 { term: "ansiedade", frequency: 50 }, { term: "MGI", frequency: 70 }, { term: "nomeação", frequency: 80 },
                 { term: "Galípolo", frequency: 40 }, { term: "Esther", frequency: 50 }, { term: "esperança", frequency: 80 },
-                { term: "boato", frequency: 60 }, { term: "PEC", frequency: 35 }, { term: "SEI", frequency: 50 }, { term: "DOU", frequency: 20 }, {term: "ofício", frequency: 15}, {term: "Marcelo", frequency: 5}
+                { term: "boato", frequency: 60 }, { term: "PEC", frequency: 35 }, { term: "SEI", frequency: 50 }, { term: "DOU", frequency: 20 }, {term: "ofício", frequency: 15}, {term: "Marcelo", frequency: 5}, {term: "autorização", frequency: 20}
             ],
             "2025-04": [
                 { term: "ansiedade", frequency: 40 }, { term: "MGI", frequency: 60 }, { term: "nomeação", frequency: 70 },
@@ -897,9 +906,29 @@
         const raceMonthsOrder = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05"];
         const raceMonthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio"];
 
-        function updateRaceChart(monthIndex) {
-            const periodKey = raceMonthsOrder[monthIndex];
-            let dataForPeriod = simulatedTermDataByMonth[periodKey] ? [...simulatedTermDataByMonth[periodKey]] : [];
+        function calculateCumulativeData() {
+            const cumulative = {};
+            raceMonthsOrder.forEach(monthKey => {
+                simulatedTermDataByMonth[monthKey].forEach(item => {
+                    cumulative[item.term] = (cumulative[item.term] || 0) + item.frequency;
+                });
+            });
+            return Object.entries(cumulative).map(([term, frequency]) => ({ term, frequency }));
+        }
+
+        function updateRaceChart(monthIndex, isCumulative = false) {
+            showingCumulative = isCumulative;
+            let dataForPeriod;
+            let periodLabel;
+
+            if (isCumulative) {
+                dataForPeriod = calculateCumulativeData();
+                periodLabel = "Frequência Acumulada (Jan-Mai 2025)";
+            } else {
+                const periodKey = raceMonthsOrder[monthIndex];
+                dataForPeriod = simulatedTermDataByMonth[periodKey] ? [...simulatedTermDataByMonth[periodKey]] : [];
+                periodLabel = `${raceMonthNames[monthIndex]} 2025`;
+            }
             
             dataForPeriod.sort((a, b) => b.frequency - a.frequency); 
             const topN = 10; 
@@ -910,8 +939,7 @@
             const backgroundColors = dataForPeriod.map(d => termColors[d.term] || termColors.default);
             const borderColors = dataForPeriod.map(d => termBorderColors[d.term] || termBorderColors.default);
 
-
-            raceChartPeriodEl.textContent = `${raceMonthNames[monthIndex]} 2025`;
+            raceChartPeriodEl.textContent = periodLabel;
 
             const chartData = {
                 labels: labels,
@@ -937,13 +965,13 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: {
-                            duration: 800, 
-                            easing: 'easeInOutQuart'
+                            duration: 600, // Shorter duration for faster transition
+                            easing: 'linear' // Linear for a more "race" like feel
                         },
                         scales: {
                             x: { 
                                 beginAtZero: true, 
-                                title: { display: true, text: 'Frequência (Contagem Simulada)'},
+                                title: { display: true, text: 'Frequência (Contagem)'}, // Removed (simulada)
                                 grid: { display: false } 
                             },
                             y: { 
@@ -968,8 +996,9 @@
                     }
                 });
             }
-            prevMonthRaceBtn.disabled = monthIndex === 0;
-            nextMonthRaceBtn.disabled = monthIndex === raceMonthsOrder.length - 1;
+            prevMonthRaceBtn.disabled = monthIndex === 0 && !isCumulative;
+            nextMonthRaceBtn.disabled = isCumulative;
+            playPauseRaceBtn.innerHTML = raceIntervalId ? '<span class="button-icon">⏸️</span>Pause' : (isCumulative ? '<span class="button-icon">🔁</span>Reiniciar' : '<span class="button-icon">▶️</span>Play');
         }
         
         function playRace() {
@@ -978,17 +1007,22 @@
                 raceIntervalId = null;
                 playPauseRaceBtn.innerHTML = '<span class="button-icon">▶️</span>Play';
             } else { 
-                playPauseRaceBtn.innerHTML = '<span class="button-icon">⏸️</span>Pause';
-                if (currentRaceMonthIndex >= raceMonthsOrder.length - 1) { // If at the end, reset to start
-                    currentRaceMonthIndex = -1; // Will be incremented to 0 before first update
+                if (showingCumulative) { 
+                    currentRaceMonthIndex = 0;
+                    showingCumulative = false;
+                    updateRaceChart(currentRaceMonthIndex);
                 }
+                playPauseRaceBtn.innerHTML = '<span class="button-icon">⏸️</span>Pause';
                 raceIntervalId = setInterval(() => {
                     currentRaceMonthIndex++;
                     if (currentRaceMonthIndex >= raceMonthsOrder.length) {
-                        currentRaceMonthIndex = 0; 
+                        clearInterval(raceIntervalId);
+                        raceIntervalId = null;
+                        updateRaceChart(0, true); 
+                        return;
                     }
                     updateRaceChart(currentRaceMonthIndex);
-                }, 2500); 
+                }, 1200); // Faster transition: 1.2 seconds
             }
         }
 
@@ -996,9 +1030,12 @@
 
         prevMonthRaceBtn.addEventListener('click', () => {
             if (raceIntervalId) playRace(); 
-            if (currentRaceMonthIndex > 0) {
+            if (showingCumulative) {
+                currentRaceMonthIndex = raceMonthsOrder.length - 1;
+                updateRaceChart(currentRaceMonthIndex, false);
+            } else if (currentRaceMonthIndex > 0) {
                 currentRaceMonthIndex--;
-                updateRaceChart(currentRaceMonthIndex);
+                updateRaceChart(currentRaceMonthIndex, false);
             }
         });
 
@@ -1006,7 +1043,9 @@
             if (raceIntervalId) playRace(); 
             if (currentRaceMonthIndex < raceMonthsOrder.length - 1) {
                 currentRaceMonthIndex++;
-                updateRaceChart(currentRaceMonthIndex);
+                updateRaceChart(currentRaceMonthIndex, false);
+            } else if (currentRaceMonthIndex === raceMonthsOrder.length - 1 && !showingCumulative) {
+                updateRaceChart(0, true); 
             }
         });
         

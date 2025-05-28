@@ -16,6 +16,7 @@
         },
 
         updateEnqueteSection: async function() {
+            console.log('[enquete.js] updateEnqueteSection chamada. currentUser:', app.currentUser, 'OPCOES_ENQUETE:', OPCOES_ENQUETE);
             if (!app.uiElements.enqueteOptionsArea) {
                 console.error("Elemento enqueteOptionsArea não encontrado (enquete.js).");
                 return;
@@ -63,14 +64,19 @@
             });
             app.uiElements.enqueteOptionsArea.appendChild(optionsContainer);
 
+            // Criar e adicionar a mensagem de status separadamente para não recriar os botões e perder listeners
+            const statusMessageParagraph = document.createElement('p');
+            statusMessageParagraph.className = 'text-center text-xs text-gray-600 mt-3';
             if (userVote) {
-                app.uiElements.enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+                statusMessageParagraph.innerHTML = `Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.`;
             } else {
-                app.uiElements.enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+                statusMessageParagraph.innerHTML = `Escolha uma opção para registrar seu sentimento!`;
             }
+            app.uiElements.enqueteOptionsArea.appendChild(statusMessageParagraph);
         },
 
         handleSubmitEnqueteVoto: async function(novoVoto) {
+            console.log('[enquete.js] handleSubmitEnqueteVoto chamada com voto:', novoVoto, 'currentUser:', app.currentUser);
             if (app.currentUser.id === 0) {
                 alert('Você precisa estar identificado para votar.');
                 if (app.auth && typeof app.auth.toggleAuthModal === 'function') app.auth.toggleAuthModal();
@@ -78,8 +84,10 @@
             }
 
             const votoParaSalvar = (app.currentUser.voto === novoVoto) ? null : novoVoto;
+            console.log('[enquete.js] Voto atual:', app.currentUser.voto, 'Novo voto:', novoVoto, 'Voto para salvar:', votoParaSalvar);
 
             try {
+                console.log('[enquete.js] Dados para Supabase:', { voto: votoParaSalvar, userId: app.currentUser.id });
                 const { data, error } = await supabaseClient
                     .from('user')
                     .update({ voto: votoParaSalvar })

@@ -6,6 +6,7 @@
     <title>Infográfico Interativo: Análise de Processos de Autorização (BACEN vs. RFB)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script> 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -330,10 +331,19 @@
         }
     </style>
 </head>
-<body class="p-4 md:p-8">
+<body class="pt-16 md:pt-20 p-4 md:p-8"> <!-- Adicionado padding-top para compensar a navbar fixa -->
+    <nav id="top-navbar" class="bg-blue-700 text-white p-3 fixed top-0 left-0 right-0 z-40 shadow-md">
+        <div class="max-w-6xl mx-auto flex flex-wrap justify-center items-center space-x-2 md:space-x-4 text-xs md:text-sm">
+            <a href="#user-interaction-zone" class="hover:bg-blue-600 px-2 py-1 rounded-md transition-colors">Enquete</a>
+            <a href="#mural-e-ranking" class="hover:bg-blue-600 px-2 py-1 rounded-md transition-colors">Mural & Ranking</a>
+            <a href="#bacen-projections" class="hover:bg-blue-600 px-2 py-1 rounded-md transition-colors">Contagem Regressiva</a>
+            <a href="#reasons-for-200" class="hover:bg-blue-600 px-2 py-1 rounded-md transition-colors">200 Motivos</a>
+            <a href="#race-chart-section" class="hover:bg-blue-600 px-2 py-1 rounded-md transition-colors">Palavras G200</a>
+        </div>
+    </nav>
     <div class="max-w-6xl mx-auto">
-        <header class="text-center mb-10 animate-on-scroll">
-            <div id="auth-widget-container" class="fixed top-4 right-4 z-50">
+        <header class="text-center mb-10 animate-on-scroll pt-4 md:pt-0"> <!-- Ajuste de padding para o header não ficar colado na navbar em telas menores -->
+            <div id="auth-widget-container" class="fixed top-20 right-4 z-50 md:top-4"> <!-- Ajustado top para não sobrepor navbar -->
                 </div>
             <h1 class="text-3xl md:text-4xl font-bold text-blue-700 mb-2"><span class="section-title-icon">🎉</span>Infográfico Interativo AprovaBACEN</h1>
             <p class="text-lg text-blue-600">Controle a ansiedade e acompanhe as novidades do Cadastro Reserva!</p>

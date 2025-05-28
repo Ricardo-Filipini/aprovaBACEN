@@ -7,6 +7,13 @@ let supabaseClient;
 let currentUser = { id: 0, name: 'Anônimo', palpite: null }; 
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Registrar o plugin de datalabels globalmente para todos os charts
+    if (typeof ChartDataLabels !== 'undefined') {
+        Chart.register(ChartDataLabels);
+    } else {
+        console.warn('ChartDataLabels plugin não encontrado. Os rótulos de dados no gráfico da enquete podem não funcionar.');
+    }
+
     if (typeof window.supabase !== 'undefined' && typeof window.supabase.createClient === 'function') {
         supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY); 
         console.log('Supabase client instance inicializada.');
@@ -57,13 +64,13 @@ function setupAuthElements() {
     authWidgetContainer.innerHTML = ''; 
 
     const mainButtonContainer = document.createElement('div');
-    mainButtonContainer.className = 'flex flex-col items-end space-y-1'; 
+    mainButtonContainer.className = 'flex flex-col items-end space-y-2'; 
 
     const authButton = document.createElement('button');
-    authButton.className = 'bg-white text-blue-700 py-2 px-4 rounded-full shadow-lg hover:bg-blue-100 transition-all duration-300 flex items-center text-sm';
+    authButton.className = 'bg-white text-blue-700 py-2 px-4 rounded-full shadow-lg hover:bg-blue-100 transition-all duration-300 flex items-center text-base'; 
     
     const userIcon = document.createElement('span');
-    userIcon.className = 'mr-2 text-lg'; 
+    userIcon.className = 'mr-2 text-xl'; 
     userIcon.textContent = '👤'; 
 
     const userNameSpan = document.createElement('span');
@@ -77,11 +84,11 @@ function setupAuthElements() {
 
     const palpiteWidget = document.createElement('div');
     palpiteWidget.id = 'user-palpite-widget';
-    palpiteWidget.className = 'text-xs text-gray-700 bg-white p-1.5 rounded-full shadow-md hover:bg-gray-100 cursor-pointer flex items-center';
+    palpiteWidget.className = 'text-sm text-gray-800 bg-white py-2 px-3 rounded-full shadow-lg hover:bg-gray-100 cursor-pointer flex items-center'; 
     palpiteWidget.style.display = 'none'; 
     palpiteWidget.innerHTML = `
-        <span class="mr-1">📅</span>
-        <span id="user-palpite-date-display"></span>
+        <span class="mr-2 text-lg">📅</span> 
+        <span id="user-palpite-date-display" class="font-medium"></span>
     `;
     palpiteWidget.addEventListener('click', togglePalpiteModal);
     mainButtonContainer.appendChild(palpiteWidget);
@@ -170,7 +177,11 @@ function togglePalpiteModal() {
         if (!modal.classList.contains('hidden')) {
             const palpiteDateInput = document.getElementById('palpite-date-input');
             if (currentUser.palpite) {
-                palpiteDateInput.value = currentUser.palpite;
+                const date = new Date(currentUser.palpite);
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                palpiteDateInput.value = `${year}-${month}-${day}`;
             } else {
                 palpiteDateInput.value = '';
             }
@@ -321,10 +332,10 @@ function updateUserPalpiteWidget() {
     if (currentUser.id !== 0 && currentUser.palpite) {
         const date = new Date(currentUser.palpite);
         date.setUTCDate(date.getUTCDate() + 1);
-        palpiteDateDisplay.textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+        palpiteDateDisplay.textContent = date.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit', year:'2-digit' }); 
         palpiteWidget.style.display = 'flex';
     } else if (currentUser.id !== 0 && !currentUser.palpite) {
-        palpiteDateDisplay.textContent = 'Seu Palpite?';
+        palpiteDateDisplay.textContent = 'Palpite?'; 
         palpiteWidget.style.display = 'flex';
     }
     else {
@@ -408,16 +419,34 @@ async function loadPalpites() {
         return;
     }
     try {
-        const { data: palpites, error } = await supabaseClient 
+        const { data: allPalpites, error } = await supabaseClient 
             .from('user')
             .select('id, name, palpite') 
-            .not('palpite', 'is', null) 
-            .order('palpite', { ascending: true }); 
+            .not('palpite', 'is', null);
 
         if (error) throw error;
 
-        renderRanking(palpites);
-        renderTop3Countdowns(palpites.slice(0, 3));
+        const palpitesPorData = allPalpites.reduce((acc, user) => {
+            const dateStr = user.palpite; 
+            if (!acc[dateStr]) {
+                acc[dateStr] = { count: 0, users: [] };
+            }
+            acc[dateStr].count++;
+            acc[dateStr].users.push(user.name);
+            return acc;
+        }, {});
+
+        const sortedDates = Object.entries(palpitesPorData)
+            .map(([date, data]) => ({ date, ...data }))
+            .sort((a, b) => {
+                if (b.count === a.count) {
+                    return new Date(a.date) - new Date(b.date); 
+                }
+                return b.count - a.count; 
+            });
+
+        renderRanking(sortedDates); 
+        renderTop3Countdowns(sortedDates.slice(0, 3)); 
 
     } catch (error) {
         console.error('Erro ao carregar palpites:', error.message);
@@ -425,10 +454,10 @@ async function loadPalpites() {
     }
 }
 
-function renderRanking(palpites) {
+function renderRanking(sortedPalpiteDates) {
     if(!rankingDisplayArea) return;
     rankingDisplayArea.innerHTML = ''; 
-    if (!palpites || palpites.length === 0) {
+    if (!sortedPalpiteDates || sortedPalpiteDates.length === 0) {
         rankingDisplayArea.innerHTML = '<p class="text-sm text-gray-600">Ainda não há palpites registrados.</p>';
         return;
     }
@@ -436,13 +465,12 @@ function renderRanking(palpites) {
     const list = document.createElement('ul');
     list.className = 'space-y-2';
 
-    palpites.forEach((p, index) => {
+    sortedPalpiteDates.slice(0, 10).forEach((pData, index) => { 
         const listItem = document.createElement('li');
-        listItem.className = 'p-2 rounded-md flex justify-between items-center text-sm';
+        listItem.className = 'p-3 rounded-md flex justify-between items-center text-sm bg-gray-50 hover:bg-gray-100 cursor-pointer relative group';
         
-        const palpiteDate = new Date(p.palpite);
+        const palpiteDate = new Date(pData.date);
         palpiteDate.setUTCDate(palpiteDate.getUTCDate() + 1);
-
 
         let medal = '';
         if (index === 0) medal = '🥇 ';
@@ -451,15 +479,13 @@ function renderRanking(palpites) {
 
         listItem.innerHTML = `
             <div>
-                <span class="font-semibold">${medal}${p.name}</span> 
+                <span class="font-semibold text-indigo-600">${medal}${palpiteDate.toLocaleDateString('pt-BR', {day: '2-digit', month: 'long', year: 'numeric'})}</span>
+                <span class="text-xs text-gray-500 ml-1">(${pData.count} ${pData.count > 1 ? 'votos' : 'voto'})</span>
             </div>
-            <span class="text-gray-700">${palpiteDate.toLocaleDateString('pt-BR')}</span>
+            <div class="user-tooltip absolute left-0 bottom-full mb-2 w-auto p-2 bg-gray-700 text-white text-xs rounded-md shadow-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-10 min-w-max">
+                ${pData.users.join(', ')}
+            </div>
         `;
-        if (p.id === currentUser.id) {
-            listItem.classList.add('bg-indigo-100', 'border-l-4', 'border-indigo-500');
-        } else {
-            listItem.classList.add('bg-gray-50');
-        }
         list.appendChild(listItem);
     });
     rankingDisplayArea.appendChild(list);
@@ -467,42 +493,43 @@ function renderRanking(palpites) {
 
 const palpiteCountdownIntervals = {}; 
 
-function renderTop3Countdowns(top3Palpites) {
+function renderTop3Countdowns(top3PalpiteDates) { 
     if(!top3CountdownArea) return;
     Object.values(palpiteCountdownIntervals).forEach(clearInterval);
     for (const key in palpiteCountdownIntervals) {
         delete palpiteCountdownIntervals[key];
     }
 
-    top3CountdownArea.innerHTML = '<h4 class="text-md font-semibold text-orange-600 mb-2">Contagem Regressiva Top 3:</h4>';
-    if (!top3Palpites || top3Palpites.length === 0) {
+    top3CountdownArea.innerHTML = '<h4 class="text-md font-semibold text-orange-600 mb-2">Contagem Regressiva (Top 3 Datas):</h4>';
+    if (!top3PalpiteDates || top3PalpiteDates.length === 0) {
         top3CountdownArea.innerHTML += '<p class="text-sm text-gray-500">Sem palpites no Top 3 para contagem.</p>';
         return;
     }
 
-    top3Palpites.forEach((p, index) => {
-        const palpiteDate = new Date(p.palpite);
+    top3PalpiteDates.forEach((pData, index) => {
+        const palpiteDate = new Date(pData.date);
         palpiteDate.setUTCDate(palpiteDate.getUTCDate() + 1);
         const targetTime = palpiteDate.getTime();
+        const dateIdSuffix = pData.date.replace(/-/g, ''); 
 
         const countdownDiv = document.createElement('div');
         countdownDiv.className = 'mb-3 p-3 bg-orange-50 rounded-lg shadow';
         countdownDiv.innerHTML = `
-            <p class="text-sm font-medium text-orange-700">${index + 1}º: ${p.name} (${palpiteDate.toLocaleDateString('pt-BR')})</p> 
-            <div id="countdown-top3-${p.id}" class="text-xs text-orange-600 flex flex-wrap justify-start gap-x-2 gap-y-1 mt-1">
-                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-days" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Dias</span></div>
-                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-hours" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Horas</span></div>
-                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-minutes" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Min</span></div>
-                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${p.id}-seconds" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Seg</span></div>
+            <p class="text-sm font-medium text-orange-700">${index + 1}º Data Mais Votada: ${palpiteDate.toLocaleDateString('pt-BR')} (${pData.count} votos)</p> 
+            <div id="countdown-top3-${dateIdSuffix}" class="text-xs text-orange-600 flex flex-wrap justify-start gap-x-2 gap-y-1 mt-1">
+                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${dateIdSuffix}-days" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Dias</span></div>
+                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${dateIdSuffix}-hours" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Horas</span></div>
+                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${dateIdSuffix}-minutes" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Min</span></div>
+                <div class="timer-segment-small flex flex-col items-center"><span id="top3-${dateIdSuffix}-seconds" class="timer-value-small font-bold text-base">00</span><span class="timer-label-small text-xs">Seg</span></div>
             </div>
         `;
         top3CountdownArea.appendChild(countdownDiv);
         
         const intervalId = setInterval(() => {
-            updateSinglePalpiteCountdown(targetTime, `top3-${p.id}-days`, `top3-${p.id}-hours`, `top3-${p.id}-minutes`, `top3-${p.id}-seconds`, `countdown-top3-${p.id}`);
+            updateSinglePalpiteCountdown(targetTime, `top3-${dateIdSuffix}-days`, `top3-${dateIdSuffix}-hours`, `top3-${dateIdSuffix}-minutes`, `top3-${dateIdSuffix}-seconds`, `countdown-top3-${dateIdSuffix}`);
         }, 1000);
-        palpiteCountdownIntervals[`countdown-top3-${p.id}`] = intervalId;
-        updateSinglePalpiteCountdown(targetTime, `top3-${p.id}-days`, `top3-${p.id}-hours`, `top3-${p.id}-minutes`, `top3-${p.id}-seconds`, `countdown-top3-${p.id}`); 
+        palpiteCountdownIntervals[`countdown-top3-${dateIdSuffix}`] = intervalId;
+        updateSinglePalpiteCountdown(targetTime, `top3-${dateIdSuffix}-days`, `top3-${dateIdSuffix}-hours`, `top3-${dateIdSuffix}-minutes`, `top3-${dateIdSuffix}-seconds`, `countdown-top3-${dateIdSuffix}`); 
     });
 }
 
@@ -543,7 +570,13 @@ function updateSinglePalpiteCountdown(targetTime, daysId, hoursId, minutesId, se
 // --- Funções de Enquete ---
 const enqueteChartCanvas = document.getElementById('enqueteChart');
 let enqueteChartInstance = null;
-const OPCOES_ENQUETE = ['Super Otimista', 'Otimista', 'Realista', 'Pessimista', 'Mar céu lar'];
+const OPCOES_ENQUETE = [
+    { label: 'Super Otimista', value: 'Super Otimista', icon: '😊' },
+    { label: 'Otimista', value: 'Otimista', icon: '🙂' },
+    { label: 'Realista', value: 'Realista', icon: '😐' },
+    { label: 'Pessimista', value: 'Pessimista', icon: '😟' },
+    { label: 'Mar céu lar', value: 'Mar céu lar', icon: '🌊' }
+];
 
 async function checkIfUserVoted(userId) {
     if (!supabaseClient || userId === 0) return null; 
@@ -565,42 +598,95 @@ async function checkIfUserVoted(userId) {
     }
 }
 
-async function handleSubmitEnqueteVoto() {
-    const form = document.getElementById('enquete-form');
-    if (!form) return;
-    const selectedOption = form.querySelector('input[name="enquete-voto"]:checked');
-
-    if (!selectedOption) {
-        alert('Por favor, selecione uma opção para votar.');
+async function handleSubmitEnqueteVoto(voto) { 
+    if (currentUser.id === 0) {
+        alert('Você precisa estar identificado para votar.');
+        toggleAuthModal();
         return;
     }
-    const voto = selectedOption.value;
 
     try {
-        if (currentUser.id !== 0) { 
-            const jaVotou = await checkIfUserVoted(currentUser.id);
-            if (jaVotou) {
-                alert(`Você já votou: ${jaVotou}. Não é possível votar novamente.`);
-                updateEnqueteSection(); 
-                return;
-            }
+        const jaVotou = await checkIfUserVoted(currentUser.id);
+        
+        if (jaVotou === voto) { 
+            return; 
         }
 
-        const { error } = await supabaseClient 
-            .from('enquete')
-            .insert([{ user_id: currentUser.id, voto: voto }]); 
+        if (jaVotou) { 
+            const { error } = await supabaseClient
+                .from('enquete')
+                .update({ voto: voto })
+                .eq('user_id', currentUser.id);
+            if (error) throw error;
+            alert('Voto atualizado com sucesso!');
+        } else { 
+            const { error } = await supabaseClient 
+                .from('enquete')
+                .insert([{ user_id: currentUser.id, voto: voto }]); 
+            if (error) throw error;
+            alert('Voto registrado com sucesso!');
+        }
         
-        if (error) throw error;
-
-        alert('Voto registrado com sucesso!');
         updateEnqueteSection(); 
         loadEnqueteResults(); 
 
     } catch (error) {
-        console.error('Erro ao registrar voto na enquete:', error.message);
-        alert('Falha ao registrar seu voto. Tente novamente.');
+        console.error('Erro ao registrar/atualizar voto na enquete:', error.message);
+        alert('Falha ao registrar/atualizar seu voto. Tente novamente.');
     }
 }
+
+async function updateEnqueteSection() {
+    if (!enqueteOptionsArea) return;
+    enqueteOptionsArea.innerHTML = '';
+    
+    if (currentUser.id === 0) {
+        enqueteOptionsArea.innerHTML = `
+            <p class="text-sm text-gray-600 mb-2 text-center">Identifique-se para votar:</p>
+            <div class="flex flex-wrap justify-center gap-2">
+                ${OPCOES_ENQUETE.map(opcao => `
+                    <button class="enquete-icon-button-disabled p-2 border rounded-lg text-2xl md:text-3xl cursor-pointer hover:bg-gray-200" title="${opcao.label}">
+                        ${opcao.icon}
+                    </button>
+                `).join('')}
+            </div>
+        `;
+        document.querySelectorAll('.enquete-icon-button-disabled').forEach(button => {
+            button.addEventListener('click', toggleAuthModal);
+        });
+        loadEnqueteResults();
+        return;
+    }
+    
+    (async () => { 
+        const userVote = await checkIfUserVoted(currentUser.id);
+
+        const optionsContainer = document.createElement('div');
+        optionsContainer.className = 'flex flex-wrap justify-center gap-2 md:gap-3';
+
+        OPCOES_ENQUETE.forEach(opcao => { 
+            const button = document.createElement('button');
+            button.className = `enquete-icon-button p-2 md:p-3 border rounded-lg text-2xl md:text-3xl transition-all duration-200 hover:shadow-lg`;
+            if (opcao.value === userVote) {
+                button.classList.add('bg-purple-600', 'text-white', 'ring-2', 'ring-purple-700', 'ring-offset-2');
+            } else {
+                button.classList.add('bg-gray-100', 'text-gray-700', 'hover:bg-purple-200');
+            }
+            button.title = opcao.label;
+            button.textContent = opcao.icon;
+            button.addEventListener('click', () => handleSubmitEnqueteVoto(opcao.value));
+            optionsContainer.appendChild(button);
+        });
+        enqueteOptionsArea.appendChild(optionsContainer);
+        if (userVote) {
+             enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Seu voto: <span class="font-semibold">${userVote}</span>. Clique em outra opção para mudar.</p>`;
+        } else {
+            enqueteOptionsArea.innerHTML += `<p class="text-center text-xs text-gray-600 mt-3">Escolha uma opção para registrar seu sentimento!</p>`;
+        }
+        loadEnqueteResults(); 
+    })();
+}
+
 
 async function loadEnqueteResults() {
     if (!supabaseClient) { 
@@ -608,20 +694,24 @@ async function loadEnqueteResults() {
         return;
     }
     try {
-        const { data: votos, error } = await supabaseClient 
+        const { data: votosComUserId, error } = await supabaseClient 
             .from('enquete')
-            .select('voto, user_id'); 
+            .select('voto, user_id, user(name)'); 
 
         if (error) throw error;
 
         const resultados = OPCOES_ENQUETE.reduce((acc, opcao) => {
-            acc[opcao] = 0;
+            acc[opcao.value] = { count: 0, users: [] };
             return acc;
         }, {});
 
-        votos.forEach(v => {
+        votosComUserId.forEach(v => {
             if (resultados.hasOwnProperty(v.voto)) {
-                resultados[v.voto]++;
+                resultados[v.voto].count++;
+                if (v.user && v.user.name) {
+                     resultados[v.voto].users.push(v.user.name);
+                } else if (v.user_id === 0) {
+                }
             }
         });
         renderEnqueteChart(resultados);
@@ -643,51 +733,127 @@ function renderEnqueteChart(resultados) {
     if (!enqueteChartCanvas) return;
     const ctx = enqueteChartCanvas.getContext('2d');
 
-    const data = {
-        labels: OPCOES_ENQUETE,
+    const labels = OPCOES_ENQUETE.map(opt => opt.label);
+    const dataCounts = OPCOES_ENQUETE.map(opt => resultados[opt.value]?.count || 0);
+    const totalVotes = dataCounts.reduce((sum, count) => sum + count, 0);
+
+    const chartData = {
+        labels: labels,
         datasets: [{
             label: 'Votos',
-            data: OPCOES_ENQUETE.map(opcao => resultados[opcao] || 0),
+            data: dataCounts,
             backgroundColor: [
-                'rgba(34, 197, 94, 0.7)',  
-                'rgba(139, 92, 246, 0.7)', 
+                'rgba(34, 197, 94, 0.8)',  
+                'rgba(16, 185, 129, 0.7)', 
                 'rgba(59, 130, 246, 0.7)', 
                 'rgba(249, 115, 22, 0.7)', 
                 'rgba(107, 114, 128, 0.7)' 
             ],
             borderColor: [
                 'rgba(22, 163, 74, 1)',
-                'rgba(124, 58, 237, 1)',
+                'rgba(5, 150, 105, 1)',
                 'rgba(37, 99, 235, 1)',
                 'rgba(234, 88, 12, 1)',
                 'rgba(75, 85, 99, 1)'
             ],
-            borderWidth: 1
+            borderWidth: 1,
+            hoverOffset: 8
         }]
     };
 
     if (enqueteChartInstance) {
-        enqueteChartInstance.data = data;
+        enqueteChartInstance.data = chartData;
+        enqueteChartInstance.options.plugins.tooltip.callbacks.label = function(context) {
+            const currentLabel = context.label || '';
+            const value = context.raw || 0;
+            const percentage = totalVotes > 0 ? ((value / totalVotes) * 100).toFixed(1) + '%' : '0%';
+            
+            const optionData = resultados[OPCOES_ENQUETE.find(o => o.label === currentLabel)?.value];
+            let userListText = '';
+            if (optionData && optionData.users.length > 0) {
+                userListText = '\n  (' + optionData.users.slice(0, 3).join(', ');
+                if (optionData.users.length > 3) userListText += ` e mais ${optionData.users.length - 3}`;
+                userListText += ')';
+            }
+            return `${currentLabel}: ${value} (${percentage})${userListText}`;
+        };
+         // Configuração do plugin datalabels
+        enqueteChartInstance.options.plugins.datalabels = {
+            display: true,
+            formatter: (value, ctx) => {
+                let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                let percentage = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
+                if (value === 0) return ''; 
+                return `${value}\n(${percentage})`;
+            },
+            color: '#fff',
+            textAlign: 'center',
+            font: {
+                weight: 'bold',
+                family: 'Inter',
+                size: 10
+            },
+            textStrokeColor: 'rgba(0,0,0,0.5)',
+            textStrokeWidth: 2,
+            align: 'center',
+            anchor: 'center'
+        };
         enqueteChartInstance.update();
     } else {
         enqueteChartInstance = new Chart(ctx, {
             type: 'doughnut', 
-            data: data,
+            data: chartData,
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
                     legend: {
-                        position: 'bottom',
+                        position: 'right', 
                         labels: {
-                            font: { family: 'Inter', size: 10 },
+                            font: { family: 'Inter', size: 11 },
                             padding: 10,
                             boxWidth: 12,
                         }
                     },
                     tooltip: {
                         titleFont: { family: 'Inter' },
-                        bodyFont: { family: 'Inter' },
+                        bodyFont: { family: 'Inter', size: 10 },
+                        callbacks: {
+                            label: function(context) {
+                                const currentLabel = context.label || '';
+                                const value = context.raw || 0;
+                                const percentage = totalVotes > 0 ? ((value / totalVotes) * 100).toFixed(1) + '%' : '0%';
+                                
+                                const optionData = resultados[OPCOES_ENQUETE.find(o => o.label === currentLabel)?.value];
+                                let userListText = '';
+                                if (optionData && optionData.users.length > 0) {
+                                     userListText = '\n  (' + optionData.users.slice(0, 3).join(', ');
+                                     if (optionData.users.length > 3) userListText += ` e mais ${optionData.users.length - 3}`;
+                                     userListText += ')';
+                                }
+                                return `${currentLabel}: ${value} (${percentage})${userListText}`;
+                            }
+                        }
+                    },
+                    datalabels: { // Configuração do plugin datalabels
+                        display: true,
+                        formatter: (value, ctx) => {
+                            let sum = ctx.chart.data.datasets[0].data.reduce((a, b) => a + b, 0);
+                            let percentage = sum > 0 ? (value * 100 / sum).toFixed(1) + "%" : "0%";
+                            if (value === 0) return ''; 
+                            return `${value}\n(${percentage})`;
+                        },
+                        color: '#fff',
+                        textAlign: 'center',
+                        font: {
+                            weight: 'bold',
+                            family: 'Inter',
+                            size: 10
+                        },
+                        textStrokeColor: 'rgba(0,0,0,0.5)',
+                        textStrokeWidth: 2,
+                        align: 'center',
+                        anchor: 'center'
                     }
                 }
             }
@@ -701,8 +867,6 @@ const muralMensagensDisplay = document.getElementById('mural-mensagens-display')
 
 async function handleDeleteMessage(messageId) {
     if (currentUser.id === 0) {
-        // Anônimos não podem apagar mensagens, pois não são donos de nenhuma.
-        // Poderia mostrar um alerta, mas o botão nem deveria aparecer para eles.
         return;
     }
     if (!confirm("Tem certeza que deseja apagar esta mensagem?")) {
@@ -816,7 +980,7 @@ function renderMensagens(messages) {
         const messageDate = new Date(msg.created_at).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
         let deleteButtonHTML = '';
-        if (currentUser.id !== 0 && msg.user_id === currentUser.id) { // Botão de apagar só para usuário logado e dono da msg
+        if (currentUser.id !== 0 && msg.user_id === currentUser.id) { 
             deleteButtonHTML = `<button class="delete-message-btn text-red-500 hover:text-red-700 text-xs ml-2" data-message-id="${msg.id}">🗑️ Apagar</button>`;
         }
         

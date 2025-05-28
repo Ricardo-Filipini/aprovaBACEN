@@ -422,9 +422,9 @@
                 <canvas id="termRaceChart"></canvas>
             </div>
             <div class="race-chart-controls flex justify-center mt-6 space-x-2">
-                <button id="prevMonthRaceBtn">‹ Mês Anterior</button>
-                <button id="playPauseRaceBtn">▶️ Play</button>
-                <button id="nextMonthRaceBtn">Próximo Mês ›</button>
+                <button id="prevMonthRaceBtn" class="scenario-button">‹ Mês Anterior</button>
+                <button id="playPauseRaceBtn" class="scenario-button"><span class="button-icon">▶️</span>Play</button>
+                <button id="nextMonthRaceBtn" class="scenario-button">Próximo Mês ›</button>
             </div>
             <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência simulados para demonstração da dinâmica.</p>
         </section>
@@ -851,6 +851,22 @@
         const prevMonthRaceBtn = document.getElementById('prevMonthRaceBtn');
         const nextMonthRaceBtn = document.getElementById('nextMonthRaceBtn');
 
+        const termColors = {
+            "ansiedade": "rgba(255, 99, 132, 0.8)", "MGI": "rgba(54, 162, 235, 0.8)", "nomeação": "rgba(75, 192, 192, 0.8)",
+            "Galípolo": "rgba(255, 206, 86, 0.8)", "Esther": "rgba(153, 102, 255, 0.8)", "esperança": "rgba(255, 159, 64, 0.8)",
+            "boato": "rgba(201, 203, 207, 0.8)", "Marcelo": "rgba(255, 99, 71, 0.8)", "prazo": "rgba(0, 206, 209, 0.8)",
+            "PEC": "rgba(255, 215, 0, 0.8)", "SEI": "rgba(138, 43, 226, 0.8)", "DOU": "rgba(127, 255, 0, 0.8)",
+            "ofício": "rgba(210, 105, 30, 0.8)", "autorização": "rgba(60, 179, 113, 0.8)", "default": "rgba(200, 200, 200, 0.8)"
+        };
+         const termBorderColors = {
+            "ansiedade": "rgba(255, 99, 132, 1)", "MGI": "rgba(54, 162, 235, 1)", "nomeação": "rgba(75, 192, 192, 1)",
+            "Galípolo": "rgba(255, 206, 86, 1)", "Esther": "rgba(153, 102, 255, 1)", "esperança": "rgba(255, 159, 64, 1)",
+            "boato": "rgba(201, 203, 207, 1)", "Marcelo": "rgba(255, 99, 71, 1)", "prazo": "rgba(0, 206, 209, 1)",
+            "PEC": "rgba(255, 215, 0, 1)", "SEI": "rgba(138, 43, 226, 1)", "DOU": "rgba(127, 255, 0, 1)",
+            "ofício": "rgba(210, 105, 30, 1)", "autorização": "rgba(60, 179, 113, 1)", "default": "rgba(180, 180, 180, 1)"
+        };
+
+
         const simulatedTermDataByMonth = {
             "2025-01": [
                 { term: "ansiedade", frequency: 60 }, { term: "MGI", frequency: 40 }, { term: "nomeação", frequency: 50 },
@@ -860,7 +876,7 @@
             "2025-02": [
                 { term: "ansiedade", frequency: 75 }, { term: "MGI", frequency: 55 }, { term: "nomeação", frequency: 65 },
                 { term: "Esther", frequency: 30 }, { term: "esperança", frequency: 60 }, { term: "boato", frequency: 45 },
-                { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}
+                { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}, {term: "Galípolo", frequency: 22}
             ],
             "2025-03": [
                 { term: "ansiedade", frequency: 50 }, { term: "MGI", frequency: 70 }, { term: "nomeação", frequency: 80 },
@@ -885,12 +901,15 @@
             const periodKey = raceMonthsOrder[monthIndex];
             let dataForPeriod = simulatedTermDataByMonth[periodKey] ? [...simulatedTermDataByMonth[periodKey]] : [];
             
-            dataForPeriod.sort((a, b) => b.frequency - a.frequency); // Sort by frequency
-            const topN = 10; // Show top N terms
+            dataForPeriod.sort((a, b) => b.frequency - a.frequency); 
+            const topN = 10; 
             dataForPeriod = dataForPeriod.slice(0, topN);
 
             const labels = dataForPeriod.map(d => wrapText(d.term, 16));
             const frequencies = dataForPeriod.map(d => d.frequency);
+            const backgroundColors = dataForPeriod.map(d => termColors[d.term] || termColors.default);
+            const borderColors = dataForPeriod.map(d => termBorderColors[d.term] || termBorderColors.default);
+
 
             raceChartPeriodEl.textContent = `${raceMonthNames[monthIndex]} 2025`;
 
@@ -899,8 +918,8 @@
                 datasets: [{
                     label: 'Frequência dos Termos',
                     data: frequencies,
-                    backgroundColor: labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 60%)`),
-                    borderColor: labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 40%)`),
+                    backgroundColor: backgroundColors,
+                    borderColor: borderColors,
                     borderWidth: 1
                 }]
             };
@@ -918,7 +937,7 @@
                         responsive: true,
                         maintainAspectRatio: false,
                         animation: {
-                            duration: 800, // Animation duration for updates
+                            duration: 800, 
                             easing: 'easeInOutQuart'
                         },
                         scales: {
@@ -954,30 +973,29 @@
         }
         
         function playRace() {
-            if (raceIntervalId) { // If playing, pause it
+            if (raceIntervalId) { 
                 clearInterval(raceIntervalId);
                 raceIntervalId = null;
-                playPauseRaceBtn.textContent = '▶️ Play';
-            } else { // If paused, play it
-                playPauseRaceBtn.textContent = '⏸️ Pause';
+                playPauseRaceBtn.innerHTML = '<span class="button-icon">▶️</span>Play';
+            } else { 
+                playPauseRaceBtn.innerHTML = '<span class="button-icon">⏸️</span>Pause';
+                if (currentRaceMonthIndex >= raceMonthsOrder.length - 1) { // If at the end, reset to start
+                    currentRaceMonthIndex = -1; // Will be incremented to 0 before first update
+                }
                 raceIntervalId = setInterval(() => {
                     currentRaceMonthIndex++;
                     if (currentRaceMonthIndex >= raceMonthsOrder.length) {
-                        currentRaceMonthIndex = 0; // Loop back or stop
-                        // clearInterval(raceIntervalId); // Optional: stop at the end
-                        // raceIntervalId = null;
-                        // playPauseRaceBtn.textContent = '▶️ Play';
-                        // return;
+                        currentRaceMonthIndex = 0; 
                     }
                     updateRaceChart(currentRaceMonthIndex);
-                }, 2500); // Change month every 2.5 seconds
+                }, 2500); 
             }
         }
 
         playPauseRaceBtn.addEventListener('click', playRace);
 
         prevMonthRaceBtn.addEventListener('click', () => {
-            if (raceIntervalId) playRace(); // Pause if playing
+            if (raceIntervalId) playRace(); 
             if (currentRaceMonthIndex > 0) {
                 currentRaceMonthIndex--;
                 updateRaceChart(currentRaceMonthIndex);
@@ -985,14 +1003,13 @@
         });
 
         nextMonthRaceBtn.addEventListener('click', () => {
-            if (raceIntervalId) playRace(); // Pause if playing
+            if (raceIntervalId) playRace(); 
             if (currentRaceMonthIndex < raceMonthsOrder.length - 1) {
                 currentRaceMonthIndex++;
                 updateRaceChart(currentRaceMonthIndex);
             }
         });
         
-        // Initialize Race Chart with the first month's data
         updateRaceChart(currentRaceMonthIndex);
 
 

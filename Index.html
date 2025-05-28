@@ -20,6 +20,29 @@
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
             padding: 1.5rem; /* 24px */
             margin-bottom: 1.5rem; /* 24px */
+            display: flex;
+            flex-direction: column;
+        }
+        .reason-card {
+            background-color: #E0F2FE; /* Tailwind Cyan-100 */
+            border-left: 5px solid #0EA5E9; /* Tailwind Cyan-500 */
+            color: #0C4A6E; /* Tailwind Cyan-800 */
+            flex-grow: 1;
+        }
+        .reason-card-humor {
+            background-color: #FEF9C3; /* Tailwind Yellow-100 */
+            border-left: 5px solid #FACC15; /* Tailwind Yellow-400 */
+            color: #713F12; /* Tailwind Yellow-800 */
+            flex-grow: 1;
+        }
+        .reason-card-critical {
+            background-color: #FEE2E2; /* Tailwind Red-100 */
+            border-left: 5px solid #EF4444; /* Tailwind Red-500 */
+            color: #991B1B; /* Tailwind Red-800 */
+            flex-grow: 1;
+        }
+        .reason-card.hidden-reason {
+            display: none;
         }
         .chart-container {
             position: relative;
@@ -33,9 +56,9 @@
             align-items: center;
         }
         .flowchart-step {
-            background-color: #DBEAFE; /* Tailwind Blue-200 */
-            border: 1px solid #93C5FD; /* Tailwind Blue-300 */
-            color: #1E40AF; /* Tailwind Blue-700 */
+            background-color: #DBEAFE; 
+            border: 1px solid #93C5FD; 
+            color: #1E40AF; 
             padding: 0.75rem 1.25rem;
             border-radius: 0.5rem;
             margin-bottom: 0.75rem;
@@ -48,7 +71,7 @@
         .flowchart-step .tooltip-text {
             visibility: hidden;
             width: 220px;
-            background-color: #374151; /* Gray-700 */
+            background-color: #374151; 
             color: #fff;
             text-align: center;
             border-radius: 6px;
@@ -79,18 +102,18 @@
         }
 
         .flowchart-step.bacen {
-            background-color: #A7F3D0; /* Tailwind Emerald-200 */
-            border-color: #6EE7B7; /* Tailwind Emerald-300 */
-            color: #047857; /* Tailwind Emerald-700 */
+            background-color: #A7F3D0; 
+            border-color: #6EE7B7; 
+            color: #047857; 
         }
          .flowchart-step.rfb {
-            background-color: #BFDBFE; /* Tailwind Blue-300 */
-            border-color: #93C5FD; /* Tailwind Blue-400 */
-            color: #1D4ED8; /* Tailwind Blue-700 */
+            background-color: #BFDBFE; 
+            border-color: #93C5FD; 
+            color: #1D4ED8; 
         }
         .flowchart-arrow {
-            font-size: 1.5rem; /* 24px */
-            color: #60A5FA; /* Tailwind Blue-400 */
+            font-size: 1.5rem; 
+            color: #60A5FA; 
             margin-bottom: 0.75rem;
             height: 20px;
             display: flex;
@@ -99,61 +122,66 @@
         }
         .main-countdown-timer {
             font-family: 'Inter', sans-serif;
-            font-weight: 800; /* Extra-bold */
+            font-weight: 800; 
             margin-bottom: 0.75rem; 
             padding: 0.5rem 0;
         }
         .main-countdown-timer .timer-segment {
-            padding: 0.5rem 0.3rem; /* Mais padding interno */
+            padding: 0.5rem 0.3rem; 
         }
         .main-timer-value {
-            font-size: 2.25rem; /* Aumentado - 36px */
+            font-size: 2.25rem; 
             line-height: 1.1;
             display: block;
         }
         .main-countdown-timer .timer-label {
-            font-size: 0.8rem; /* Aumentado */
+            font-size: 0.8rem; 
             text-transform: uppercase;
-            color: #4B5563; /* Gray-600 */
+            color: #4B5563; 
             font-weight: 500;
         }
         .secondary-countdown-timer {
-            font-weight: 600; /* Semi-bold */
-            color: #374151; /* Gray-700 */
+            font-weight: 600; 
+            color: #374151; 
             margin-top: 0.25rem;
         }
          .secondary-countdown-timer .timer-segment {
             padding: 0.2rem 0.2rem;
         }
         .secondary-timer-value {
-            font-size: 1rem; /* Aumentado - 16px */
+            font-size: 1rem; 
             display: block;
         }
         .secondary-countdown-timer .timer-label {
-            font-size: 0.7rem; /* Aumentado */
+            font-size: 0.7rem; 
             text-transform: uppercase;
-            color: #6B7280; /* Gray-500 */
+            color: #6B7280; 
             font-weight: 400;
         }
         .stage-bar-container { display: flex; align-items: center; margin-bottom: 0.5rem; }
         .stage-label { font-size: 0.875rem; width: 150px; flex-shrink: 0; }
         .stage-bar { height: 20px; border-radius: 0.25rem; display: flex; align-items: center; justify-content: flex-end; padding-right: 0.5rem; color: white; font-size:0.75rem; }
-        .rfb-bar-color { background-color: #60A5FA; /* Blue-400 */ }
-        .bacen-bar-color { background-color: #34D399; /* Emerald-400 */ }
+        .rfb-bar-color { background-color: #60A5FA; }
+        .bacen-bar-color { background-color: #34D399; }
 
         .scenario-button {
-            background-color: #DBEAFE; /* Blue-200 */
-            color: #2563EB; /* Blue-600 */
+            background-color: #DBEAFE; 
+            color: #2563EB; 
             padding: 0.5rem 1rem;
             border-radius: 0.375rem;
             font-weight: 500;
             transition: background-color 0.3s, color 0.3s;
+            display: inline-flex; 
+            align-items: center; 
+        }
+        .scenario-button .button-icon {
+            margin-right: 0.5rem;
         }
         .scenario-button:hover {
-            background-color: #BFDBFE; /* Blue-300 */
+            background-color: #BFDBFE; 
         }
         .scenario-button.active {
-            background-color: #2563EB; /* Blue-600 */
+            background-color: #2563EB; 
             color: white;
         }
         .projection-card.hidden {
@@ -225,11 +253,11 @@
             background-color: #EBF4FF;
         }
         .interactive-list li {
-            padding-left: 0.5rem; /* Espaço para o emoji */
+            padding-left: 0.5rem; 
             transition: background-color 0.2s, transform 0.2s;
         }
         .interactive-list li:hover {
-            background-color: #EFF6FF; /* Blue-50 */
+            background-color: #EFF6FF; 
             transform: translateX(2px);
         }
         .interactive-list li::before {
@@ -246,7 +274,7 @@
             z-index: 99;
             border: none;
             outline: none;
-            background-color: #2563EB; /* Blue-600 */
+            background-color: #2563EB; 
             color: white;
             cursor: pointer;
             padding: 12px 15px;
@@ -255,12 +283,22 @@
             box-shadow: 0 2px 5px rgba(0,0,0,0.2);
         }
         #toTopBtn:hover {
-            background-color: #1D4ED8; /* Blue-700 */
+            background-color: #1D4ED8; 
         }
         .section-title-icon {
             margin-right: 0.5rem;
-            font-size: 1.5em; /* Ajuste conforme necessário */
+            font-size: 1.5em; 
             vertical-align: middle;
+        }
+        .reason-icon {
+            font-size: 1.5rem; /* Ajustado para emojis */
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+        .reason-card h3 {
+            display: flex;
+            align-items: center; /* Alinha ícone e texto verticalmente */
         }
     </style>
 </head>
@@ -276,9 +314,9 @@
             <p class="text-center text-gray-600 mb-10">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final). Contagens a partir de 27 de Maio de 2025.</p>
             
             <div class="flex justify-center space-x-3 mb-8">
-                <button class="scenario-button active" data-scenario="optimistic">🚀 Otimista</button>
-                <button class="scenario-button" data-scenario="realistic">🎯 Realista</button>
-                <button class="scenario-button" data-scenario="pessimistic">⏳ Pessimista</button>
+                <button class="scenario-button active" data-scenario="optimistic"><span class="button-icon">🚀</span>Otimista</button>
+                <button class="scenario-button" data-scenario="realistic"><span class="button-icon">🎯</span>Realista</button>
+                <button class="scenario-button" data-scenario="pessimistic"><span class="button-icon">⏳</span>Pessimista</button>
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
@@ -341,6 +379,16 @@
                         <div class="timer-segment"><span id="pess-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
                     </div>
                 </div>
+            </div>
+        </section>
+        
+        <section id="reasons-for-200" class="mb-12 animate-on-scroll">
+            <h2 class="text-3xl font-bold text-center text-blue-700 mb-4"><span class="section-title-icon">📢</span>200 Motivos (ou Quase!) para Chamar o Cadastro Reserva do BACEN</h2>
+            <p class="text-center text-gray-600 mb-10">Argumentos técnicos, estratégicos, urgentes e alguns... nem tanto, compilados dos anseios dos aprovados e da realidade do Banco Central.</p>
+            <div id="reasons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+            <div class="text-center mt-8">
+                <button id="loadMoreReasons" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded-lg shadow-md transition-colors">Carregar Mais Motivos</button>
             </div>
         </section>
 
@@ -417,7 +465,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <h3 class="text-xl font-medium text-emerald-600 mb-2">Pontos de Otimismo</h3>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm interactive-list">
+                    <ul class="list-disc text-gray-700 space-y-1 text-sm interactive-list">
                         <li class="optimism-item">Agilidade inicial do BACEN (1 dia vs. 121 dias da RFB para chegar à SGP) é um forte indicativo positivo.</li>
                         <li class="optimism-item">Possível priorização do processo do BACEN ou instrução processual exemplar.</li>
                         <li class="optimism-item">Potencial para sinergia e celeridade nas análises subsequentes caso a base técnica da SGP seja robusta e rapidamente aprovada.</li>
@@ -425,7 +473,7 @@
                 </div>
                 <div>
                     <h3 class="text-xl font-medium text-amber-600 mb-2">Pontos de Cautela</h3>
-                    <ul class="list-disc list-inside text-gray-700 space-y-1 text-sm interactive-list">
+                    <ul class="list-disc text-gray-700 space-y-1 text-sm interactive-list">
                         <li class="caution-item">As etapas de análise orçamentária (MPO) e jurídica (CONJUR) são inerentemente complexas e podem demandar tempo.</li>
                         <li class="caution-item">Trâmites finais envolvem múltiplas instâncias e a coordenação para publicação do ato normativo pode gerar demoras.</li>
                         <li class="caution-item">Mesmo os cenários otimistas para o BACEN exigem uma eficiência contínua e acima da média histórica.</li>
@@ -453,6 +501,104 @@
     <button onclick="scrollToTop()" id="toTopBtn" title="Voltar ao Topo">↑</button>
 
     <script>
+        // ANCHOR: Observer for scroll animations
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-visible');
+                }
+            });
+        }, { threshold: 0.05 });
+
+        const animatedElements = document.querySelectorAll('.animate-on-scroll');
+        animatedElements.forEach(el => observer.observe(el));
+
+
+        // ANCHOR: Reasons for 200 vagas
+        const allReasons = [
+            { title: "Déficit Histórico de Servidores", text: "O BCB está com o pior déficit de servidores da sua história, sem concurso desde 2014. Apenas 100 vagas preenchem somente 3,9% da vacância de Auditores.", category: "critical", icon: "📉" },
+            { title: "Atraso de Projetos Importantes", text: "65% dos projetos de inovação e regulamentação (DREX, PIX, nova lei cambial) atrasaram em 2023 por falta de pessoal e orçamento.", category: "critical", icon: "⏰" },
+            { title: "Assimetria com Outros Órgãos", text: "Comparado a outros concursos recentes (MPO, MTE), o BCB teve a menor proporção de vagas ofertadas em relação à vacância e a menor validade de concurso (6+6 meses).", category: "technical", icon: "⚖️" },
+            { title: "Impacto Orçamentário Positivo", text: "A convocação de mais aprovados pode gerar economia, pois muitos já são servidores. Estudo indica economia de R$ 8,4 milhões em 2025 com 300 nomeações.", category: "technical", icon: "💰" },
+            { title: "Validade Curta do Concurso", text: "A validade de apenas 6+6 meses, somada ao ano eleitoral e risco de atraso na LOA 2026, torna urgente a convocação do CR.", category: "critical", icon: "⏳" },
+            { title: "Aumento das Atribuições do BCB", text: "Novas responsabilidades como supervisão de IPs, Open Finance, Criptoativos e DREX demandam mais pessoal qualificado.", category: "technical", icon: "🌍" },
+            { title: "Aumento da Diversidade de Gênero", text: "A proporção de mulheres no CR é 63% superior à das vagas imediatas. Chamar o CR amenizaria o desbalanceamento.", category: "technical", icon: "♀️♂️" },
+            { title: "Qualificação e Experiência do CR", text: "62% dos aprovados no CR possuem pelo menos uma especialização. A convocação agregaria experiência sem aumentar a média de idade (32 anos).", category: "technical", icon: "🎓" },
+            { title: "'Fuga de Cérebros' para Outros Concursos", text: "Muitos aprovados no BACEN também passaram em outros concursos (BNDES, CNU), e podem não assumir se a convocação demorar.", category: "critical", icon: "🏃" },
+            { title: "Pressão do FMI e Bloomberg", text: "Relatórios de instituições como FMI e notícias em veículos como Bloomberg destacam o encolhimento do BC e os riscos para a supervisão, reforçando a urgência.", category: "critical", icon: "🚨" },
+            { title: "Reforma Tributária e PIX Cashback", text: "Hiago (22/01/2025): A reforma tributária implantará cashback via PIX, aumentando a demanda no BCB.", category: "technical", icon: "💡" },
+            { title: "Compromisso da Diretoria", text: "Luana (19/02/2025): Diretor de Administração (Rodrigo) reafirmou compromisso de solicitar ao MGI a convocação de todos os aprovados.", category: "technical", icon: "🗣️" },
+            { title: "Até o FMI Concorda!", text: "Anônimo (20/02/2025): 'FMI diz que BCB precisa de mais gente'. Se até eles estão falando...", category: "humor", icon: "🌍" },
+            { title: "Autonomia do BCB (PEC)", text: "A PEC de autonomia financeira e administrativa pode demandar mais pessoal para a nova estrutura e responsabilidades.", category: "technical", icon: "📜" },
+            { title: "DREX e Falta de Recursos", text: "Anônimo (28/02/2025): 'Falta de recursos/pessoal já impediu novos casos de uso no DREX.' Mais gente para o DREX decolar!", category: "critical", icon: "💸" },
+            { title: "'Cabeças Brancas' para o Caso Master", text: "Notícia do Estadão (29/03/2025) sugere falta de especialistas para grandes operações como a análise da compra do Master pelo BRB.", category: "critical", icon: "👴" },
+            { title: "Lentidão na Fiscalização (Caso PCC)", text: "Notícia do UOL (30/03/2025) indica que BCB demora 1 ano para fiscalizar banco citado em inquérito sobre PCC por falta de pessoal.", category: "critical", icon: "🐌" },
+            { title: "Orçamento de Teco-Teco", text: "Relator da PEC (20/05/2025): 'O Banco Central é um Boeing com orçamento de teco-teco'. Mais gente para otimizar!", category: "humor", icon: "✈️" },
+            { title: "BCB à Beira do Colapso?", text: "Manchete do NoticiasConcursos (22/05/2025). Sensacionalista? Talvez. Mas onde há fumaça...", category: "humor", icon: "💥" },
+            { title: "Para a Paz de Espírito do Marcelo", text: "Diversos (recorrente): Para que o colega Marcelo (também conhecido como i.verdades) finalmente encontre a paz, pare de 'Marcelar', criar fakes e ter 'nojo do BCB'. A nomeação é a cura!", category: "humor", icon: "🧘‍♂️" },
+            { title: "Pelo Churrasco da Posse!", text: "Anônimo (28/02/2025): 'A nomeação de todos é fundamental para garantir o épico churrasco de posse, com retrospectiva dos memes e 'causos' do grupo G200.'", category: "humor", icon: "🥩" },
+            { title: "Para a Compra dos Carros dos Sonhos", text: "Diversos (18/04/2025): 'Aprovados já planejam de QQ a Defender, Lancer, Eclipse... e rachas valendo o primeiro salário. Precisam do dimdim!'", category: "humor", icon: "🚗" },
+            { title: "Para o Pessoal Sossegar e Parar de Estudar", text: "Diversos (01/03/2025): 'Para que todos possam finalmente 'emburrecer calmamente' ou focar em mestrados, doutorados, música, idiomas, e não em outro concurso.'", category: "humor", icon: "📚" },
+            { title: "Para Acabar com a Ansiedade Coletiva", text: "Geral (recorrente): 'As '72715394 mensagens' e o F5 constante no SEI/DOU mostram: o grupo precisa dessa nomeação para sobreviver!'", category: "humor", icon: "🤯" },
+            { title: "O Time Nessa Situação e os Caras...", text: "Anônimo (06/05/2025): '...almoçando/viajando/de férias'. Uma afronta! Chamem os 200 para resolver!", category: "humor", icon: "😴" },
+            { title: "Para o Galípolo Viajar Tranquilo", text: "Anônimo (13/05/2025): 'GG vai para China/Espanha. Ele precisa ir com a consciência tranquila de que o CR está encaminhado!'", category: "humor", icon: "✈️" },
+            { title: "PIX em Portugal Já Foi!", text: "Anônimo (10/05/2025): 'O PIX em Portugal já foi autorizado. O Brasil, criador da tecnologia, não pode ficar para trás por falta de gente!'", category: "humor", icon: "🇵🇹" },
+            { title: "Marketing para o Governo", text: "Felipe Freire (03/04/2025): 'Lula pode usar o PIX como propaganda, e para isso precisa de mais servidores no BCB.'", category: "technical", icon: "📢" },
+            { title: "Órgão Mais Odiado?", text: "Anônimo (07/03/2025): 'Se não chamar todo mundo, o BC é o órgão mais odiado de todos xD'. Evitem o ódio nacional!", category: "humor", icon: "🤬" },
+            { title: "Promessa é Dívida, Galípolo!", text: "Interpretação popular: 'O Galípolo prometeu/indicou que chamaria todos. Acreditamos no nosso presidente!'", category: "humor", icon: "🙏" },
+            { title: "Apoio do Cota (DEPES)", text: "Luana (25/03/2025): 'O Cota (Chefe do DEPES) falou que estão correndo atrás da convocação de todos os aprovados.'", category: "technical", icon: "🤝" },
+            { title: "Não Dá para Esperar Mais 10 Anos", text: "Diversos (recorrente): 'O último concurso demorou uma década. Não podemos esperar tanto por outro. Chamem o CR AGORA!'", category: "critical", icon: "⏳" },
+            { title: "Orçamento é 'Troco de Pinga'", text: "Adaptação (recorrente): 'O impacto orçamentário para chamar mais 200 é irrisório perto do orçamento da União e do retorno que o BCB gera.'", category: "technical", icon: "💸" },
+            { title: "Chega de Serem Negados", text: "Anônimo (10/05/2025): 'BC só tem pedidos de concurso negados ou vagas reduzidas. Uma hora tem que vir!'", category: "humor", icon: "🚫" },
+            { title: "Para Comprar o PS5 e Zerar GTA VI", text: "Diversos (recorrente): 'A nomeação é crucial para aquisição de consoles de nova geração e dedicação total ao GTA VI, sem culpa.'", category: "humor", icon: "🎮" },
+            { title: "Departamento de Memes do BACEN", text: "Anônimo (19/05/2025): 'O Departamento de Memes do Bacen precisa de reforços urgentes para melhorar a comunicação digital!'", category: "humor", icon: "🤡" },
+            { title: "Cala Boca do MGI", text: "Anônimo (23/05/2025): 'O MGI vai dar um 'cala boca' no BCB autorizando tudo, já que pedem muitas vagas todo ano.'", category: "humor", icon: "🗣️" },
+            { title: "Para Não 'Marcelar' de Vez", text: "Adaptação (recorrente): 'A saúde mental coletiva do G200 depende dessa nomeação para evitar um surto generalizado de 'Marcelismo'.'", category: "humor", icon: "🧠" },
+            { title: "#MenosArmasMaisAuditores", text: "Anônimo (13/03/2025): 'A hashtag da vitória: Menos armas, mais auditores do BACEN!'", category: "humor", icon: "💪" },
+            { title: "Paz Mundial e Fim das Guerras", text: "Anônimo (08/05/2025): 'A convocação dos 200 do CR do BACEN é a resposta para a paz mundial. Se chamar, acabam as guerras.'", category: "humor", icon: "🕊️" },
+            { title: "Papai GG e Mamãe Esther", text: "Adaptação (09/05/2025): 'Papai GG já fez a parte dele, agora é com Mamãe Esther para liberar a autorização.'", category: "humor", icon: "👨‍👩‍👧‍👦" },
+            { title: "Para Parar de Dar F5 no SEI", text: "Geral (recorrente): 'A nomeação é a única forma de liberar os aprovados da tortura de atualizar o SEI e o DOU a cada 5 minutos.'", category: "humor", icon: "🤖" },
+            { title: "Se o Marcelo Otimista Acredita...", text: "Adaptação (11/03/2025): 'Se até o Marcelo (nos seus raros momentos de otimismo) acredita, então VAI ACONTECER!'", category: "humor", icon: "🥳" }
+        ];
+        let reasonsLoaded = 0;
+        const reasonsPerLoad = 9;
+        const reasonsGrid = document.getElementById('reasons-grid');
+        const loadMoreButton = document.getElementById('loadMoreReasons');
+
+        function getReasonCardClass(category) {
+            if (category === 'critical') return 'reason-card-critical';
+            if (category === 'humor') return 'reason-card-humor';
+            return 'reason-card'; 
+        }
+
+        function loadReasons() {
+            const toLoad = allReasons.slice(reasonsLoaded, reasonsLoaded + reasonsPerLoad);
+            toLoad.forEach(reason => {
+                const cardDiv = document.createElement('div');
+                cardDiv.className = `card ${getReasonCardClass(reason.category)} animate-on-scroll`;
+                cardDiv.innerHTML = `
+                    <h3 class="text-lg font-semibold mb-2 flex items-start">
+                        <span class="reason-icon">${reason.icon}</span>
+                        <span>${reason.title}</span>
+                    </h3>
+                    <p class="text-sm">${reason.text}</p>
+                `;
+                reasonsGrid.appendChild(cardDiv);
+                observer.observe(cardDiv); // ANCHOR: Observe new card
+            });
+            reasonsLoaded += toLoad.length;
+            if (reasonsLoaded >= allReasons.length) {
+                loadMoreButton.style.display = 'none';
+            }
+        }
+        
+        if (loadMoreButton) {
+            loadMoreButton.addEventListener('click', loadReasons);
+            loadReasons(); // Initial load of reasons
+        }
+
+
+        // ANCHOR: Chart.js and Countdown Logic
         function wrapText(text, maxLength) {
             if (typeof text !== 'string' || text.length <= maxLength) {
                 return text;
@@ -473,64 +619,68 @@
         }
 
         const initialPhaseChartCtx = document.getElementById('initialPhaseChart').getContext('2d');
-        const initialPhaseChart = new Chart(initialPhaseChartCtx, {
-            type: 'bar',
-            data: {
-                labels: [wrapText('RFB: Autuação até SGP/DICOP', 16), wrapText('BACEN: Autuação até SGP/DICOP', 16)],
-                datasets: [{
-                    label: 'Lead Time (dias)',
-                    data: [121, 1],
-                    backgroundColor: ['#60A5FA', '#34D399'],
-                    borderColor: ['#3B82F6', '#10B981'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                indexAxis: 'y',
-                scales: { x: { beginAtZero: true, title: { display: true, text: 'Dias' } } },
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Tempo para Chegada na Análise Técnica Principal (SGP)' },
-                    tooltip: {
-                        callbacks: {
-                            title: function(tooltipItems) {
-                                const item = tooltipItems[0];
-                                let label = item.chart.data.labels[item.dataIndex];
-                                if (Array.isArray(label)) { return label.join(' '); }
-                                return label;
+        if (initialPhaseChartCtx) {
+            const initialPhaseChart = new Chart(initialPhaseChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: [wrapText('RFB: Autuação até SGP/DICOP', 16), wrapText('BACEN: Autuação até SGP/DICOP', 16)],
+                    datasets: [{
+                        label: 'Lead Time (dias)',
+                        data: [121, 1],
+                        backgroundColor: ['#60A5FA', '#34D399'],
+                        borderColor: ['#3B82F6', '#10B981'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, title: { display: true, text: 'Dias' } } },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Tempo para Chegada na Análise Técnica Principal (SGP)' },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems) {
+                                    const item = tooltipItems[0];
+                                    let label = item.chart.data.labels[item.dataIndex];
+                                    if (Array.isArray(label)) { return label.join(' '); }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const clickedIndex = elements[0].index;
+                            if (clickedIndex === 0) { 
+                                const section = document.getElementById('rfb-process');
+                                if (section) section.scrollIntoView({ behavior: 'smooth' });
+                            } else if (clickedIndex === 1) { 
+                                const section = document.getElementById('bacen-process-details');
+                                if (section) section.scrollIntoView({ behavior: 'smooth' });
                             }
                         }
                     }
-                },
-                onClick: (event, elements) => {
-                    if (elements.length > 0) {
-                        const clickedIndex = elements[0].index;
-                        if (clickedIndex === 0) { // RFB
-                            document.getElementById('rfb-process').scrollIntoView({ behavior: 'smooth' });
-                        } else if (clickedIndex === 1) { // BACEN
-                            document.getElementById('bacen-process-details').scrollIntoView({ behavior: 'smooth' });
-                        }
-                    }
                 }
-            }
-        });
+            });
+        }
 
         const BACEN_OTIMISTA_INTERVAL_DAYS = 20;
         const BACEN_REALISTA_INTERVAL_DAYS = 30;
         const BACEN_PESSIMISTA_INTERVAL_DAYS = 45;
 
-        const targetDatesDivulg = {
-            optimistic: new Date(2025, 4, 29, 23, 59, 59).getTime(),
-            realistic: new Date(2025, 5, 5, 23, 59, 59).getTime(),
-            pessimistic: new Date(2025, 5, 12, 23, 59, 59).getTime()
+        const targetDatesDivulg = { 
+            optimistic: new Date(2025, 4, 29, 23, 59, 59).getTime(), 
+            realistic: new Date(2025, 5, 5, 23, 59, 59).getTime(),   
+            pessimistic: new Date(2025, 5, 12, 23, 59, 59).getTime() 
         };
 
-        const targetDatesPub = {
-            optimistic: targetDatesDivulg.optimistic + (BACEN_OTIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000),
-            realistic: targetDatesDivulg.realistic + (BACEN_REALISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000),
-            pessimistic: targetDatesDivulg.pessimistic + (BACEN_PESSIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000)
+        const targetDatesPub = { 
+            optimistic: targetDatesDivulg.optimistic + (BACEN_OTIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000), 
+            realistic: targetDatesDivulg.realistic + (BACEN_REALISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000),   
+            pessimistic: targetDatesDivulg.pessimistic + (BACEN_PESSIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000) 
         };
 
         function formatDateForDisplay(dateTimestamp) {
@@ -539,12 +689,15 @@
             return date.toLocaleDateString('pt-BR', options);
         }
 
-        document.getElementById('opt-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.optimistic);
-        document.getElementById('opt-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.optimistic);
-        document.getElementById('real-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.realistic);
-        document.getElementById('real-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.realistic);
-        document.getElementById('pess-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.pessimistic);
-        document.getElementById('pess-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.pessimistic);
+        if(document.getElementById('opt-divulg-date-text')) {
+            document.getElementById('opt-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.optimistic);
+            document.getElementById('opt-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.optimistic);
+            document.getElementById('real-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.realistic);
+            document.getElementById('real-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.realistic);
+            document.getElementById('pess-divulg-date-text').textContent = formatDateForDisplay(targetDatesDivulg.pessimistic);
+            document.getElementById('pess-pub-date-text').textContent = formatDateForDisplay(targetDatesPub.pessimistic);
+        }
+
 
         function updateSingleCountdown(targetTime, daysId, hoursId, minutesId, secondsId, timerClass) {
             const now = new Date().getTime();
@@ -581,6 +734,7 @@
             updateSingleCountdown(targetDatesPub[scenario], `${scenario.substring(0,3)}-pub-days`, `${scenario.substring(0,3)}-pub-hours`, `${scenario.substring(0,3)}-pub-minutes`, `${scenario.substring(0,3)}-pub-seconds`, 'secondary-countdown-timer');
         });
 
+        // ANCHOR: Scenario Button Logic
         const scenarioButtons = document.querySelectorAll('.scenario-button');
         const projectionCards = {
             optimistic: document.getElementById('projection-optimistic'),
@@ -592,41 +746,37 @@
                 scenarioButtons.forEach(btn => btn.classList.remove('active'));
                 button.classList.add('active');
                 const selectedScenario = button.dataset.scenario;
-                Object.values(projectionCards).forEach(card => card.classList.add('hidden'));
+                
+                Object.values(projectionCards).forEach(card => {
+                    if(card) { // Check if card exists
+                        card.classList.add('hidden');
+                        card.style.gridColumn = ''; 
+                    }
+                });
+
                 if (projectionCards[selectedScenario]) {
                     projectionCards[selectedScenario].classList.remove('hidden');
-                     projectionCards[selectedScenario].style.gridColumn = 'md:col-span-3'; // Ocupa todas as colunas temporariamente
-                     setTimeout(() => { // Permite que o DOM atualize antes de recalcular a centralização
-                        Object.values(projectionCards).forEach(card => { // Reseta outros cards
-                            if (card !== projectionCards[selectedScenario]) {
-                                card.style.gridColumn = '';
-                            }
-                        });
-                         if(window.innerWidth >= 768) { // md breakpoint (Tailwind)
-                            projectionCards[selectedScenario].style.gridColumn = 'md:col-start-2'; // Centraliza o card ativo
-                         } else {
-                            projectionCards[selectedScenario].style.gridColumn = ''; // Largura total em telas pequenas
-                         }
-                    }, 0);
+                    if (window.innerWidth >= 768) { 
+                        projectionCards[selectedScenario].style.gridColumn = 'md:col-start-2 md:col-span-1';
+                    } else {
+                         projectionCards[selectedScenario].style.gridColumn = 'col-span-1'; 
+                    }
                 }
             });
         });
-        // Estado inicial: Otimista visível e centralizado em telas médias ou maiores
-        if (window.innerWidth >= 768) {
-            projectionCards.optimistic.style.gridColumn = 'md:col-start-2';
-        }
-
-
-        const animatedElements = document.querySelectorAll('.animate-on-scroll');
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('is-visible');
+        
+        if (projectionCards.optimistic) { // Check if optimistic card exists
+            if (window.innerWidth >= 768) {
+                projectionCards.optimistic.style.gridColumn = 'md:col-start-2 md:col-span-1';
+            }
+            Object.values(projectionCards).forEach(card => {
+                if(card && card.id !== 'projection-optimistic') {
+                    card.classList.add('hidden');
                 }
             });
-        }, { threshold: 0.1 });
-        animatedElements.forEach(el => observer.observe(el));
+        }
 
+        // ANCHOR: Modal Logic
         const modal = document.getElementById('premiseModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalText = document.getElementById('modalText');
@@ -638,29 +788,35 @@
         document.querySelectorAll('.info-icon').forEach(icon => {
             icon.addEventListener('click', (e) => {
                 const scenario = e.target.dataset.premise;
-                modalTitle.textContent = `Premissas do Cenário ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`;
-                modalText.innerHTML = premiseTexts[scenario];
-                modal.classList.add('open');
+                if (modalTitle) modalTitle.textContent = `Premissas do Cenário ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`;
+                if (modalText) modalText.innerHTML = premiseTexts[scenario];
+                if (modal) modal.classList.add('open');
             });
         });
         function closeModal() {
-            modal.classList.remove('open');
+            if (modal) modal.classList.remove('open');
         }
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) closeModal(); // Fecha se clicar fora do conteúdo do modal
-        });
-
+        if (modal) {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal(); 
+            });
+        }
+        
+        // ANCHOR: To Top Button
         const toTopBtn = document.getElementById("toTopBtn");
-        window.onscroll = function() {scrollFunction()};
-        function scrollFunction() {
-          if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
-            toTopBtn.style.display = "block";
-          } else {
-            toTopBtn.style.display = "none";
-          }
-        }
-        function scrollToTop() {
-          window.scrollTo({top: 0, behavior: 'smooth'});
+        if (toTopBtn) {
+            window.onscroll = function() {scrollFunction()};
+            function scrollFunction() {
+              if (document.body.scrollTop > 100 || document.documentElement.scrollTop > 100) {
+                toTopBtn.style.display = "block";
+              } else {
+                toTopBtn.style.display = "none";
+              }
+            }
+            function scrollToTop() {
+              window.scrollTo({top: 0, behavior: 'smooth'});
+            }
+            toTopBtn.addEventListener('click', scrollToTop); // Ensure event listener is added
         }
     </script>
 </body>

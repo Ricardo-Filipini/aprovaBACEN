@@ -50,6 +50,11 @@
             margin-left: auto;
             margin-right: auto;
         }
+        #raceChartParentContainer { /* Specific for race chart */
+            height: 60vh; 
+            max-height: 550px; /* Increased max height */
+            width: 100%;
+        }
         .flowchart-container {
             display: flex;
             flex-direction: column;
@@ -219,14 +224,10 @@
             background-color: white;
             padding: 2rem;
             border-radius: 0.5rem;
-            max-width: 90%;
-            width: auto;
-            min-width: 300px; /* Minimum width for smaller modals */
+            max-width: 500px;
+            width: 90%;
             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
             position: relative;
-        }
-        .modal-content-lg { /* For larger modals like the rave chart */
-             max-width: 800px;
         }
         .modal-close {
             position: absolute;
@@ -304,15 +305,22 @@
             display: flex;
             align-items: center; 
         }
-        #raveChartContainer {
-            height: 50vh; /* Default height */
-            max-height: 450px;
+         .race-chart-controls button {
+            background-color: #BFDBFE; /* Blue-300 */
+            color: #1D4ED8; /* Blue-700 */
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+            margin: 0 0.25rem;
         }
-        @media (min-width: 768px) { /* md breakpoint */
-            #raveChartContainer {
-                height: 60vh;
-                max-height: 500px;
-            }
+        .race-chart-controls button:hover {
+            background-color: #93C5FD; /* Blue-400 */
+        }
+         .race-chart-controls button:disabled {
+            background-color: #E5E7EB; /* Gray-200 */
+            color: #9CA3AF; /* Gray-400 */
+            cursor: not-allowed;
         }
     </style>
 </head>
@@ -406,14 +414,19 @@
             </div>
         </section>
 
-        <section id="rave-chart-trigger-section" class="card text-center animate-on-scroll">
-            <h2 class="text-2xl font-semibold text-blue-700 mb-3"><span class="section-title-icon">💬</span>Termômetro da Conversa G200</h2>
-            <p class="text-gray-700 leading-relaxed mb-6">
-                Visualize a frequência dos termos mais discutidos no grupo de WhatsApp "G200 BCB" ao longo do tempo. Uma forma de sentir a "temperatura" e os temas quentes da comunidade de aprovados.
-            </p>
-            <button id="openRaveChartModal" class="bg-teal-500 hover:bg-teal-600 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-colors mx-auto">
-                Analisar Emoções da Conversa (Rave Chart)
-            </button>
+        <section id="race-chart-section" class="card mb-12 animate-on-scroll">
+            <h2 class="text-2xl font-semibold text-blue-700 mb-2 text-center"><span class="section-title-icon">💬</span>Termômetro da Conversa G200: A Emoção em Gráfico</h2>
+            <p class="text-center text-gray-600 mb-4">Visualize a frequência (simulada) dos termos mais discutidos no grupo ao longo dos meses.</p>
+            <p id="raceChartPeriod" class="text-center text-lg font-semibold text-blue-600 mb-4">Mês: <span class="font-bold">Janeiro 2025</span></p>
+            <div id="raceChartParentContainer">
+                <canvas id="termRaceChart"></canvas>
+            </div>
+            <div class="race-chart-controls flex justify-center mt-6 space-x-2">
+                <button id="prevMonthRaceBtn">‹ Mês Anterior</button>
+                <button id="playPauseRaceBtn">▶️ Play</button>
+                <button id="nextMonthRaceBtn">Próximo Mês ›</button>
+            </div>
+            <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência simulados para demonstração da dinâmica.</p>
         </section>
 
         <section id="intro-details" class="card mb-12 animate-on-scroll">
@@ -519,22 +532,6 @@
             <span class="modal-close" onclick="closeModal('premiseModal')">&times;</span>
             <h3 id="modalTitle" class="text-xl font-semibold mb-3">Premissas do Cenário</h3>
             <p id="modalText" class="text-sm text-gray-700 leading-relaxed"></p>
-        </div>
-    </div>
-
-    <div id="raveChartModal" class="modal">
-        <div class="modal-content modal-content-lg">
-            <span class="modal-close" onclick="closeModal('raveChartModal')">&times;</span>
-            <h3 class="text-2xl font-semibold text-blue-700 mb-2 text-center">💬 Termômetro da Conversa G200</h3>
-            <p id="raveChartPeriod" class="text-center text-gray-600 mb-4">Mês: <span class="font-semibold">Janeiro 2025</span></p>
-            <div id="raveChartContainer" class="chart-container">
-                <canvas id="termFrequencyChart"></canvas>
-            </div>
-            <div class="flex justify-center mt-4 space-x-3">
-                <button id="prevMonthRave" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-l">‹ Mês Anterior</button>
-                <button id="nextMonthRave" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-r">Próximo Mês ›</button>
-            </div>
-            <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência simulados para demonstração.</p>
         </div>
     </div>
 
@@ -810,7 +807,6 @@
 
 
         const modalPremise = document.getElementById('premiseModal');
-        const modalRave = document.getElementById('raveChartModal');
         const modalTitle = document.getElementById('modalTitle');
         const modalText = document.getElementById('modalText');
         const premiseTexts = {
@@ -832,11 +828,7 @@
         modalPremise.addEventListener('click', (e) => {
             if (e.target === modalPremise) closeModal('premiseModal'); 
         });
-         modalRave.addEventListener('click', (e) => {
-            if (e.target === modalRave) closeModal('raveChartModal');
-        });
-
-
+        
         const toTopBtn = document.getElementById("toTopBtn");
         window.onscroll = function() {scrollFunction()};
         function scrollFunction() {
@@ -850,56 +842,95 @@
           window.scrollTo({top: 0, behavior: 'smooth'});
         }
 
-        // Rave Chart Logic
-        const openRaveChartButton = document.getElementById('openRaveChartModal');
-        const raveChartPeriodEl = document.getElementById('raveChartPeriod').querySelector('span');
-        let termFrequencyChartInstance;
-        let currentMonthIndex = 0;
+        // Race Chart Logic
+        const raceChartPeriodEl = document.getElementById('raceChartPeriod').querySelector('span');
+        let termRaceChartInstance;
+        let currentRaceMonthIndex = 0;
+        let raceIntervalId = null;
+        const playPauseRaceBtn = document.getElementById('playPauseRaceBtn');
+        const prevMonthRaceBtn = document.getElementById('prevMonthRaceBtn');
+        const nextMonthRaceBtn = document.getElementById('nextMonthRaceBtn');
 
-        const simulatedTermData = {
-            "2025-01": { "ansiedade": 60, "MGI": 40, "nomeação": 50, "Galípolo": 20, "esperança": 70, "boato": 30, "Marcelo": 10, "prazo": 25 },
-            "2025-02": { "ansiedade": 75, "MGI": 55, "nomeação": 65, "Esther": 30, "esperança": 60, "boato": 45, "PEC": 20, "Marcelo": 25, "SEI": 30 },
-            "2025-03": { "ansiedade": 50, "MGI": 70, "nomeação": 80, "Galípolo": 40, "Esther": 50, "esperança": 80, "boato": 60, "PEC": 35, "SEI": 50, "DOU": 20, "Marcelo": 5 },
-            "2025-04": { "ansiedade": 40, "MGI": 60, "nomeação": 70, "Galípolo": 60, "Esther": 70, "esperança": 90, "boato": 30, "PEC": 25, "SEI": 60, "DOU": 40, "ofício": 50, "Marcelo": 2 },
-            "2025-05": { "ansiedade": 85, "MGI": 80, "nomeação": 95, "Galípolo": 75, "Esther": 85, "esperança": 50, "boato": 70, "PEC": 15, "SEI": 90, "DOU": 70, "ofício": 80, "Marcelo": 40, "autorização": 90 }
+        const simulatedTermDataByMonth = {
+            "2025-01": [
+                { term: "ansiedade", frequency: 60 }, { term: "MGI", frequency: 40 }, { term: "nomeação", frequency: 50 },
+                { term: "Galípolo", frequency: 20 }, { term: "esperança", frequency: 70 }, { term: "boato", frequency: 30 },
+                { term: "Marcelo", frequency: 10 }, { term: "prazo", frequency: 25 }, { term: "PEC", frequency: 5}, {term: "SEI", frequency: 15}
+            ],
+            "2025-02": [
+                { term: "ansiedade", frequency: 75 }, { term: "MGI", frequency: 55 }, { term: "nomeação", frequency: 65 },
+                { term: "Esther", frequency: 30 }, { term: "esperança", frequency: 60 }, { term: "boato", frequency: 45 },
+                { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}
+            ],
+            "2025-03": [
+                { term: "ansiedade", frequency: 50 }, { term: "MGI", frequency: 70 }, { term: "nomeação", frequency: 80 },
+                { term: "Galípolo", frequency: 40 }, { term: "Esther", frequency: 50 }, { term: "esperança", frequency: 80 },
+                { term: "boato", frequency: 60 }, { term: "PEC", frequency: 35 }, { term: "SEI", frequency: 50 }, { term: "DOU", frequency: 20 }, {term: "ofício", frequency: 15}, {term: "Marcelo", frequency: 5}
+            ],
+            "2025-04": [
+                { term: "ansiedade", frequency: 40 }, { term: "MGI", frequency: 60 }, { term: "nomeação", frequency: 70 },
+                { term: "Galípolo", frequency: 60 }, { term: "Esther", frequency: 70 }, { term: "esperança", frequency: 90 },
+                { term: "boato", frequency: 30 }, { term: "PEC", frequency: 25 }, { term: "SEI", frequency: 60 }, { term: "DOU", frequency: 40 }, {term: "ofício", frequency: 50}, {term: "autorização", frequency: 35}, {term: "Marcelo", frequency: 2}
+            ],
+            "2025-05": [
+                { term: "ansiedade", frequency: 85 }, { term: "MGI", frequency: 80 }, { term: "nomeação", frequency: 95 },
+                { term: "Galípolo", frequency: 75 }, { term: "Esther", frequency: 85 }, { term: "esperança", frequency: 50 },
+                { term: "boato", frequency: 70 }, { term: "PEC", frequency: 15 }, { term: "SEI", frequency: 90 }, { term: "DOU", frequency: 70 }, {term: "ofício", frequency: 80}, {term: "autorização", frequency: 90}, {term: "Marcelo", frequency: 40}
+            ]
         };
-        const monthsOrder = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05"];
-        const monthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio"];
+        const raceMonthsOrder = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05"];
+        const raceMonthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio"];
 
-        function updateRaveChart(monthIndex) {
-            const periodKey = monthsOrder[monthIndex];
-            const dataForPeriod = simulatedTermData[periodKey] || {};
-            const terms = Object.keys(dataForPeriod);
-            const frequencies = Object.values(dataForPeriod);
+        function updateRaceChart(monthIndex) {
+            const periodKey = raceMonthsOrder[monthIndex];
+            let dataForPeriod = simulatedTermDataByMonth[periodKey] ? [...simulatedTermDataByMonth[periodKey]] : [];
+            
+            dataForPeriod.sort((a, b) => b.frequency - a.frequency); // Sort by frequency
+            const topN = 10; // Show top N terms
+            dataForPeriod = dataForPeriod.slice(0, topN);
 
-            raveChartPeriodEl.textContent = `${monthNames[monthIndex]} 2025`;
+            const labels = dataForPeriod.map(d => wrapText(d.term, 16));
+            const frequencies = dataForPeriod.map(d => d.frequency);
+
+            raceChartPeriodEl.textContent = `${raceMonthNames[monthIndex]} 2025`;
 
             const chartData = {
-                labels: terms.map(term => wrapText(term, 12)),
+                labels: labels,
                 datasets: [{
                     label: 'Frequência dos Termos',
                     data: frequencies,
-                    backgroundColor: terms.map((_, i) => `hsl(${(i * 360 / terms.length)}, 70%, 60%)`), // Dynamic colors
-                    borderColor: terms.map((_, i) => `hsl(${(i * 360 / terms.length)}, 70%, 40%)`),
+                    backgroundColor: labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 60%)`),
+                    borderColor: labels.map((_, i) => `hsl(${(i * 360 / labels.length)}, 70%, 40%)`),
                     borderWidth: 1
                 }]
             };
 
-            if (termFrequencyChartInstance) {
-                termFrequencyChartInstance.data = chartData;
-                termFrequencyChartInstance.update();
+            if (termRaceChartInstance) {
+                termRaceChartInstance.data = chartData;
+                termRaceChartInstance.update();
             } else {
-                const ctx = document.getElementById('termFrequencyChart').getContext('2d');
-                termFrequencyChartInstance = new Chart(ctx, {
-                    type: 'bar', // Horizontal bar chart for better label readability
+                const ctx = document.getElementById('termRaceChart').getContext('2d');
+                termRaceChartInstance = new Chart(ctx, {
+                    type: 'bar',
                     data: chartData,
                     options: {
                         indexAxis: 'y',
                         responsive: true,
                         maintainAspectRatio: false,
+                        animation: {
+                            duration: 800, // Animation duration for updates
+                            easing: 'easeInOutQuart'
+                        },
                         scales: {
-                            x: { beginAtZero: true, title: { display: true, text: 'Frequência (Contagem Simulada)'} },
-                            y: { ticks: { autoSkip: false } }
+                            x: { 
+                                beginAtZero: true, 
+                                title: { display: true, text: 'Frequência (Contagem Simulada)'},
+                                grid: { display: false } 
+                            },
+                            y: { 
+                                ticks: { autoSkip: false },
+                                grid: { display: true, color: "#e2e8f0" }
+                            }
                         },
                         plugins: {
                             legend: { display: false },
@@ -918,27 +949,52 @@
                     }
                 });
             }
+            prevMonthRaceBtn.disabled = monthIndex === 0;
+            nextMonthRaceBtn.disabled = monthIndex === raceMonthsOrder.length - 1;
+        }
+        
+        function playRace() {
+            if (raceIntervalId) { // If playing, pause it
+                clearInterval(raceIntervalId);
+                raceIntervalId = null;
+                playPauseRaceBtn.textContent = '▶️ Play';
+            } else { // If paused, play it
+                playPauseRaceBtn.textContent = '⏸️ Pause';
+                raceIntervalId = setInterval(() => {
+                    currentRaceMonthIndex++;
+                    if (currentRaceMonthIndex >= raceMonthsOrder.length) {
+                        currentRaceMonthIndex = 0; // Loop back or stop
+                        // clearInterval(raceIntervalId); // Optional: stop at the end
+                        // raceIntervalId = null;
+                        // playPauseRaceBtn.textContent = '▶️ Play';
+                        // return;
+                    }
+                    updateRaceChart(currentRaceMonthIndex);
+                }, 2500); // Change month every 2.5 seconds
+            }
         }
 
-        openRaveChartButton.addEventListener('click', () => {
-            currentMonthIndex = monthsOrder.length -1; // Start with the latest month
-            updateRaveChart(currentMonthIndex);
-            modalRave.classList.add('open');
-        });
+        playPauseRaceBtn.addEventListener('click', playRace);
 
-        document.getElementById('prevMonthRave').addEventListener('click', () => {
-            if (currentMonthIndex > 0) {
-                currentMonthIndex--;
-                updateRaveChart(currentMonthIndex);
+        prevMonthRaceBtn.addEventListener('click', () => {
+            if (raceIntervalId) playRace(); // Pause if playing
+            if (currentRaceMonthIndex > 0) {
+                currentRaceMonthIndex--;
+                updateRaceChart(currentRaceMonthIndex);
             }
         });
 
-        document.getElementById('nextMonthRave').addEventListener('click', () => {
-            if (currentMonthIndex < monthsOrder.length - 1) {
-                currentMonthIndex++;
-                updateRaveChart(currentMonthIndex);
+        nextMonthRaceBtn.addEventListener('click', () => {
+            if (raceIntervalId) playRace(); // Pause if playing
+            if (currentRaceMonthIndex < raceMonthsOrder.length - 1) {
+                currentRaceMonthIndex++;
+                updateRaceChart(currentRaceMonthIndex);
             }
         });
+        
+        // Initialize Race Chart with the first month's data
+        updateRaceChart(currentRaceMonthIndex);
+
 
     </script>
 </body>

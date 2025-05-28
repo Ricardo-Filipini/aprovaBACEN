@@ -1,0 +1,50 @@
+<section id="palpites-section" class="card animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-slate-700 mb-4 flex items-center">
+        <i data-lucide="calendar-heart" class="lucide-icon text-blue-600 mr-2"></i>Seu Palpite para a Divulgação
+    </h2>
+    <p class="text-sm text-slate-500 mb-3">Quando você acha que a divulgação da autorização será realizada?</p>
+    
+    <div class="mb-4">
+        <label for="palpite-date" class="block text-sm font-medium text-slate-700 mb-1">Selecione a data:</label>
+        <input type="date" id="palpite-date" class="w-full md:w-auto">
+    </div>
+    
+    <button id="btn-enviar-palpite" class="btn btn-primary w-full md:w-auto">
+        <i data-lucide="send" class="lucide-icon mr-2"></i>Enviar Palpite
+    </button>
+
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold text-slate-700 mb-3">
+            <i data-lucide="bar-chart-3" class="lucide-icon text-blue-600 mr-2"></i>Ranking de Palpites:
+        </h3>
+        <div id="palpite-ranking" class="text-sm space-y-1 text-slate-600 max-h-60 overflow-y-auto p-3 bg-slate-50 rounded-md">
+            <p class="text-sm text-slate-500">Carregando ranking...</p>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold text-slate-700 mb-3">
+            <i data-lucide="timer" class="lucide-icon text-blue-600 mr-2"></i>Contagem Regressiva (Top 3 Palpites):
+        </h3>
+        <div id="countdown-timers" class="space-y-4">
+            <p class="text-sm text-slate-500">Carregando contagens...</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Garante que os scripts da seção de palpites sejam chamados.
+    if (typeof initPalpitesSection === 'function') {
+        initPalpitesSection();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initPalpitesSection === 'function') {
+                initPalpitesSection();
+            }
+        });
+    }
+    // Ativa os ícones Lucide para esta seção
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>

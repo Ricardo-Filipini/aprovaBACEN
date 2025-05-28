@@ -1,0 +1,42 @@
+<section id="enquete-section" class="card animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-slate-700 mb-4 flex items-center">
+        <i data-lucide="pie-chart" class="lucide-icon text-purple-600 mr-2"></i>Enquete de Otimismo
+    </h2>
+    <p class="text-sm text-slate-500 mb-3">Como você está se sentindo hoje em relação à autorização?</p>
+    
+    <div id="enquete-opcoes" class="mb-4 flex flex-wrap">
+        <!-- Opções de rádio serão renderizadas aqui pelo JS -->
+        <p class="text-sm text-slate-500">Carregando opções da enquete...</p>
+    </div>
+    
+    <button id="btn-votar-enquete" class="btn btn-primary w-full md:w-auto">
+        <i data-lucide="vote" class="lucide-icon mr-2"></i>Votar
+    </button>
+    
+    <div class="mt-8">
+        <h3 class="text-xl font-semibold text-slate-700 mb-3">
+            <i data-lucide="activity" class="lucide-icon text-purple-600 mr-2"></i>Resultado da Enquete:
+        </h3>
+        <div class="chart-container relative h-72 md:h-80 w-full max-w-md mx-auto">
+            <canvas id="enquete-chart"></canvas>
+            <p id="enquete-no-data-message" class="text-sm text-slate-500 text-center mt-4" style="display: none;">Nenhum voto na enquete ainda.</p>
+        </div>
+    </div>
+</section>
+
+<script>
+    // Garante que os scripts da seção de enquete sejam chamados.
+    if (typeof initEnqueteSection === 'function') {
+        initEnqueteSection();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initEnqueteSection === 'function') {
+                initEnqueteSection();
+            }
+        });
+    }
+    // Ativa os ícones Lucide para esta seção
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>

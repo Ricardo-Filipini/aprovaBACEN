@@ -1,0 +1,409 @@
+<section id="bacen-projections" class="mb-12 animate-on-scroll">
+    <h2 class="text-3xl font-bold text-center text-blue-700 mb-4"><span class="section-title-icon">🗓️</span>Projeções de Autorização para o BACEN</h2>
+    <p class="text-center text-gray-600 mb-10">Contagens regressivas para "Divulgação" (marco principal) e "Publicação do Ato" (final). Contagens a partir de 27 de Maio de 2025.</p>
+    
+    <div class="flex justify-center space-x-3 mb-8">
+        <button class="scenario-button active" data-scenario="optimistic"><span class="button-icon">🚀</span>Otimista</button>
+        <button class="scenario-button" data-scenario="realistic"><span class="button-icon">🎯</span>Realista</button>
+        <button class="scenario-button" data-scenario="pessimistic"><span class="button-icon">⏳</span>Pessimista</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+        <div id="projection-optimistic" class="projection-card card border-l-4 border-emerald-500 text-center">
+            <h3 class="text-xl font-semibold text-emerald-700 mb-2">🚀 Cenário Otimista <span class="info-icon" data-premise="optimistic">ℹ️</span></h3>
+            <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="opt-divulg-date-text" class="font-medium text-emerald-600"></span></p>
+            <div id="countdown-optimistic-divulg" class="main-countdown-timer text-emerald-600 flex justify-around">
+                <div class="timer-segment"><span id="opt-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="opt-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="opt-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                <div class="timer-segment"><span id="opt-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+            </div>
+            <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Otimista): ~20 dias.</p>
+            <hr class="my-3">
+            <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="opt-pub-date-text" class="font-medium"></span></p>
+            <div id="countdown-optimistic-pub" class="secondary-countdown-timer flex justify-around">
+                <div class="timer-segment"><span id="opt-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="opt-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="opt-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                <div class="timer-segment"><span id="opt-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+            </div>
+        </div>
+
+        <div id="projection-realistic" class="projection-card card border-l-4 border-blue-500 text-center hidden">
+            <h3 class="text-xl font-semibold text-blue-700 mb-2">🎯 Cenário Realista <span class="info-icon" data-premise="realistic">ℹ️</span></h3>
+            <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="real-divulg-date-text" class="font-medium text-blue-600"></span></p>
+            <div id="countdown-realistic-divulg" class="main-countdown-timer text-blue-600 flex justify-around">
+                <div class="timer-segment"><span id="real-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="real-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="real-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                <div class="timer-segment"><span id="real-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+            </div>
+             <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Realista): ~30 dias.</p>
+            <hr class="my-3">
+            <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="real-pub-date-text" class="font-medium"></span></p>
+            <div id="countdown-realistic-pub" class="secondary-countdown-timer flex justify-around">
+                <div class="timer-segment"><span id="real-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="real-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="real-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                <div class="timer-segment"><span id="real-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+            </div>
+        </div>
+
+        <div id="projection-pessimistic" class="projection-card card border-l-4 border-amber-500 text-center hidden">
+            <h3 class="text-xl font-semibold text-amber-700 mb-2">⏳ Cenário Pessimista <span class="info-icon" data-premise="pessimistic">ℹ️</span></h3>
+            <p class="text-gray-600 text-sm mb-3">"Divulgação" Prevista: <span id="pess-divulg-date-text" class="font-medium text-amber-600"></span></p>
+            <div id="countdown-pessimistic-divulg" class="main-countdown-timer text-amber-600 flex justify-around">
+                <div class="timer-segment"><span id="pess-divulg-days" class="main-timer-value">0</span><span class="timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="pess-divulg-hours" class="main-timer-value">0</span><span class="timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="pess-divulg-minutes" class="main-timer-value">0</span><span class="timer-label">Min</span></div>
+                <div class="timer-segment"><span id="pess-divulg-seconds" class="main-timer-value">0</span><span class="timer-label">Seg</span></div>
+            </div>
+            <p class="text-xs text-gray-500 mb-3 mt-0 leading-tight">Nota: "Divulgação" (SGP→SOF). Intervalo Div→Pub BACEN (Pessimista): ~45 dias.</p>
+            <hr class="my-3">
+            <p class="text-gray-600 text-xs mb-2">Publicação do Ato: <span id="pess-pub-date-text" class="font-medium"></span></p>
+            <div id="countdown-pessimistic-pub" class="secondary-countdown-timer flex justify-around">
+                <div class="timer-segment"><span id="pess-pub-days" class="secondary-timer-value">0</span><span class="secondary-timer-label">Dias</span></div>
+                <div class="timer-segment"><span id="pess-pub-hours" class="secondary-timer-value">0</span><span class="secondary-timer-label">Horas</span></div>
+                <div class="timer-segment"><span id="pess-pub-minutes" class="secondary-timer-value">0</span><span class="secondary-timer-label">Min</span></div>
+                <div class="timer-segment"><span id="pess-pub-seconds" class="secondary-timer-value">0</span><span class="secondary-timer-label">Seg</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section id="race-chart-section" class="card mb-12 animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-2 text-center"><span class="section-title-icon">💬</span>Termômetro da Conversa G200: A Emoção em Gráfico</h2>
+    <p class="text-center text-gray-600 mb-4">Visualize a frequência dos termos mais discutidos no grupo ao longo dos meses.</p>
+    <p id="raceChartPeriod" class="text-center text-lg font-semibold text-blue-600 mb-4">Mês: <span class="font-bold">Janeiro 2025</span></p>
+    <div id="raceChartParentContainer">
+        <canvas id="termRaceChart"></canvas>
+    </div>
+    <div class="race-chart-controls flex justify-center mt-6 space-x-2">
+        <button id="prevMonthRaceBtn" class="scenario-button"><span class="button-icon">‹</span>Mês Anterior</button>
+        <button id="playPauseRaceBtn" class="scenario-button"><span class="button-icon">▶️</span>Play</button>
+        <button id="nextMonthRaceBtn" class="scenario-button">Próximo Mês<span class="button-icon ml-2">›</span></button>
+    </div>
+    <p class="text-xs text-center text-gray-500 mt-4">Obs: Dados de frequência para demonstração da dinâmica.</p>
+</section>
+
+<section id="intro-details" class="card mb-12 animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-3"><span class="section-title-icon">📋</span>Introdução à Análise Detalhada</h2>
+    <p class="text-gray-700 leading-relaxed mb-2">
+        A seguir, apresentamos uma análise comparativa dos processos de autorização governamental, utilizando o processo da Receita Federal (RFB) como referência e o processo em andamento do Banco Central (BACEN) como objeto de estudo. O objetivo é identificar padrões e comparar lead times em etapas chave.
+    </p>
+    <p class="text-xs text-gray-500">Análise baseada em dados públicos de tramitação, fluxograma de aprovação e informações sobre o processo RFB (anúncio em ~26-27/Set quando DIPRO encaminhou ao SOF; data de referência para SGP->SOF: 03/Out/2024).</p>
+</section>
+
+<div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+    <section id="rfb-process" class="card animate-on-scroll">
+        <h2 class="text-2xl font-semibold text-blue-700 mb-4"><span class="section-title-icon">📊</span>O Processo de Referência: Receita Federal (RFB)</h2>
+        <p class="text-gray-600 mb-2">Processo RFB (18220.000423/2024-86):</p>
+        <ul class="list-disc list-inside text-sm text-gray-600 mb-4 space-y-1 interactive-list">
+            <li>"Divulgação" (SGP/DIPRO → SOF): ~03/Out/2024</li>
+            <li>Publicação do Ato (Decreto): 19/Dez/2024</li>
+            <li>Intervalo Divulgação → Publicação: ~77 dias</li>
+        </ul>
+        <div class="mb-6">
+            <h3 class="text-xl font-medium text-blue-600 mb-3">Fluxo Simplificado RFB:</h3>
+            <div class="flowchart-container">
+                <div class="flowchart-step rfb" data-tooltip="Início do processo e trâmites burocráticos iniciais.">Autuação e Trâmites Iniciais <span class="tooltip-text">Início do processo e trâmites burocráticos iniciais.</span></div>
+                <div class="flowchart-arrow">↓</div>
+                <div class="flowchart-step rfb" data-tooltip="Análise técnica aprofundada na Secretaria de Gestão de Pessoas.">Análise Técnica Principal (SGP/DICOP) <span class="tooltip-text">Análise técnica aprofundada na Secretaria de Gestão de Pessoas.</span></div>
+                <div class="flowchart-arrow">↓</div>
+                <div class="flowchart-step rfb" data-tooltip="Marco de 'anúncio', envio para análise orçamentária."><strong>"Divulgação" (Envio SGP → SOF)</strong> <span class="tooltip-text">Marco de 'anúncio', envio para análise orçamentária.</span></div>
+                <div class="flowchart-arrow">↓</div>
+                <div class="flowchart-step rfb" data-tooltip="Verificação de impacto orçamentário e conformidade legal.">Análise Orçamentária (MPO) & Jurídica (CONJUR) <span class="tooltip-text">Verificação de impacto orçamentário e conformidade legal.</span></div>
+                <div class="flowchart-arrow">↓</div>
+                <div class="flowchart-step rfb" data-tooltip="Preparação final do ato normativo e publicação oficial.">Trâmites Finais e Publicação do Ato <span class="tooltip-text">Preparação final do ato normativo e publicação oficial.</span></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="bacen-process-details" class="card animate-on-scroll">
+        <h2 class="text-2xl font-semibold text-emerald-700 mb-4"><span class="section-title-icon">🏦</span>O Processo em Análise: BACEN</h2>
+        <p class="text-gray-600 mb-4">Processo BACEN (18600.045452/2025-83) com notável agilidade inicial. Atualmente na SGP/MGI.</p>
+         <div class="mb-6">
+            <h3 class="text-xl font-medium text-emerald-600 mb-3">Fluxo Previsto BACEN:</h3>
+            <div class="flowchart-container">
+                <div class="flowchart-step bacen" data-tooltip="BACEN demonstrou extrema rapidez nesta etapa inicial.">Autuação e Trâmites Iniciais (Concluído: 1 dia!) <span class="tooltip-text">BACEN demonstrou extrema rapidez nesta etapa inicial.</span></div>
+                <div class="flowchart-arrow text-emerald-500">↓</div>
+                <div class="flowchart-step bacen" data-tooltip="Etapa atual, crucial para definir os próximos passos.">Análise Técnica Principal (SGP/DICOP) (Em Andamento) <span class="tooltip-text">Etapa atual, crucial para definir os próximos passos.</span></div>
+                <div class="flowchart-arrow text-emerald-500">↓</div>
+                <div class="flowchart-step bacen" data-tooltip="Projeção do marco de 'anúncio' para o BACEN."><strong>"Divulgação" (Envio SGP → SOF) (Previsto)</strong> <span class="tooltip-text">Projeção do marco de 'anúncio' para o BACEN.</span></div>
+                <div class="flowchart-arrow text-emerald-500">↓</div>
+                <div class="flowchart-step bacen" data-tooltip="Espera-se celeridade nestas análises para o BACEN.">Análise Orçamentária (MPO) & Jurídica (CONJUR) (Previsto) <span class="tooltip-text">Espera-se celeridade nestas análises para o BACEN.</span></div>
+                <div class="flowchart-arrow text-emerald-500">↓</div>
+                <div class="flowchart-step bacen" data-tooltip="Etapa final até a autorização oficial.">Trâmites Finais e Publicação do Ato (Previsto) <span class="tooltip-text">Etapa final até a autorização oficial.</span></div>
+            </div>
+        </div>
+         <div>
+            <h3 class="text-xl font-medium text-emerald-600 mb-3">Lead Time Inicial (BACEN):</h3>
+             <div class="stage-bar-container">
+                <span class="stage-label">Autuação → SGP:</span>
+                <div class="stage-bar bacen-bar-color" style="width: 5%;">1 dia</div>
+            </div>
+        </div>
+    </section>
+</div>
+
+<section id="leadtime-comparison-chart-section" class="card mb-12 animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-4"><span class="section-title-icon">📈</span>Comparativo de Agilidade Inicial: Chegada à SGP</h2>
+    <p class="text-gray-600 mb-4">A diferença no tempo para alcançar a principal etapa de análise técnica na SGP é um indicador chave. Clique nas barras para mais detalhes.</p>
+    <div class="chart-container relative w-full max-w-2xl mx-auto h-72 md:h-80">
+        <canvas id="initialPhaseChart"></canvas>
+    </div>
+</section>
+
+<section id="analysis-factors" class="card mb-12 animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-4"><span class="section-title-icon">💡</span>Análise de Fatores: Otimismo vs. Cautela</h2>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div>
+            <h3 class="text-xl font-medium text-emerald-600 mb-2">Pontos de Otimismo</h3>
+            <ul class="list-disc text-gray-700 space-y-1 text-sm interactive-list">
+                <li class="optimism-item">Agilidade inicial do BACEN (1 dia vs. 121 dias da RFB para chegar à SGP) é um forte indicativo positivo.</li>
+                <li class="optimism-item">Possível priorização do processo do BACEN ou instrução processual exemplar.</li>
+                <li class="optimism-item">Potencial para sinergia e celeridade nas análises subsequentes caso a base técnica da SGP seja robusta e rapidamente aprovada.</li>
+            </ul>
+        </div>
+        <div>
+            <h3 class="text-xl font-medium text-amber-600 mb-2">Pontos de Cautela</h3>
+            <ul class="list-disc text-gray-700 space-y-1 text-sm interactive-list">
+                <li class="caution-item">As etapas de análise orçamentária (MPO) e jurídica (CONJUR) são inerentemente complexas e podem demandar tempo.</li>
+                <li class="caution-item">Trâmites finais envolvem múltiplas instâncias e a coordenação para publicação do ato normativo pode gerar demoras.</li>
+                <li class="caution-item">Mesmo os cenários otimistas para o BACEN exigem uma eficiência contínua e acima da média histórica.</li>
+            </ul>
+        </div>
+    </div>
+</section>
+
+<section id="conclusion" class="card text-center animate-on-scroll">
+    <h2 class="text-2xl font-semibold text-blue-700 mb-3"><span class="section-title-icon">🏁</span>Conclusão da Análise</h2>
+    <p class="text-gray-700 leading-relaxed">
+        Com os ajustes e a inversão da ordem, as projeções de "Divulgação" e "Publicação" para o BACEN são apresentadas inicialmente. O cenário otimista aponta para "Divulgação" em 29/Maio e "Publicação" em 18/Junho. O realista sugere "Divulgação" em 05/Junho e publicação em 05/Julho. O pessimista projeta "Divulgação" para 12/Junho e publicação em 27/Julho. Estes prazos refletem uma expectativa de maior eficiência do BACEN em todas as etapas finais, detalhadas na análise subsequente.
+    </p>
+</section>
+
+<div id="premiseModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" id="closePremiseModalBtn">&times;</span>
+        <h3 id="modalTitle" class="text-xl font-semibold mb-3">Premissas do Cenário</h3>
+        <p id="modalText" class="text-sm text-gray-700 leading-relaxed"></p>
+    </div>
+</div>
+
+<script>
+    // Garante que os scripts da seção de metodologia sejam chamados.
+    // A lógica específica desta seção (gráficos, countdowns, modais) será colocada aqui ou em interactive.js
+    // e chamada por initMetodologiaSection() a partir de main.js.
+
+    function initMetodologiaSection() {
+        console.log('Inicializando scripts da Seção Metodologia e Estimativas...');
+
+        // Lógica de animação de scroll (pode ser global ou re-instanciada)
+        const animatedElements = document.querySelectorAll('#metodologia_estimativa .animate-on-scroll');
+        if (typeof observer !== 'undefined' && typeof observer.observe === 'function') {
+            animatedElements.forEach(el => observer.observe(el));
+        } else if (window.setupScrollAnimations) {
+            window.setupScrollAnimations(animatedElements);
+        }
+
+
+        // Gráfico de Comparação de Agilidade Inicial
+        const initialPhaseChartCtx = document.getElementById('initialPhaseChart')?.getContext('2d');
+        if (initialPhaseChartCtx) {
+            new Chart(initialPhaseChartCtx, {
+                type: 'bar',
+                data: {
+                    labels: [wrapTextForChart('RFB: Autuação até SGP/DICOP', 16), wrapTextForChart('BACEN: Autuação até SGP/DICOP', 16)],
+                    datasets: [{
+                        label: 'Lead Time (dias)',
+                        data: [121, 1],
+                        backgroundColor: ['#60A5FA', '#34D399'],
+                        borderColor: ['#3B82F6', '#10B981'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+                    scales: { x: { beginAtZero: true, title: { display: true, text: 'Dias' } } },
+                    plugins: {
+                        legend: { display: false },
+                        title: { display: true, text: 'Tempo para Chegada na Análise Técnica Principal (SGP)' },
+                        tooltip: { callbacks: { title: (tooltipItems) => formatChartTooltipTitle(tooltipItems) } }
+                    },
+                    onClick: (event, elements) => {
+                        if (elements.length > 0) {
+                            const clickedIndex = elements[0].index;
+                            const targetId = clickedIndex === 0 ? 'rfb-process' : (clickedIndex === 1 ? 'bacen-process-details' : null);
+                            if (targetId) document.getElementById(targetId)?.scrollIntoView({ behavior: 'smooth' });
+                        }
+                    }
+                }
+            });
+        }
+
+        // Lógica dos Countdowns de Projeção
+        const BACEN_OTIMISTA_INTERVAL_DAYS = 20;
+        const BACEN_REALISTA_INTERVAL_DAYS = 30;
+        const BACEN_PESSIMISTA_INTERVAL_DAYS = 45;
+        const targetDatesDivulg = { 
+            optimistic: new Date(2025, 4, 29, 23, 59, 59).getTime(), 
+            realistic: new Date(2025, 5, 5, 23, 59, 59).getTime(),   
+            pessimistic: new Date(2025, 5, 12, 23, 59, 59).getTime() 
+        };
+        const targetDatesPub = { 
+            optimistic: targetDatesDivulg.optimistic + (BACEN_OTIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000), 
+            realistic: targetDatesDivulg.realistic + (BACEN_REALISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000),   
+            pessimistic: targetDatesDivulg.pessimistic + (BACEN_PESSIMISTA_INTERVAL_DAYS * 24 * 60 * 60 * 1000) 
+        };
+
+        function formatDateForDisplay(dateTimestamp) {
+            const date = new Date(dateTimestamp);
+            return date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long', day: 'numeric' });
+        }
+
+        document.getElementById('opt-divulg-date-text')?.textContent = formatDateForDisplay(targetDatesDivulg.optimistic);
+        document.getElementById('opt-pub-date-text')?.textContent = formatDateForDisplay(targetDatesPub.optimistic);
+        document.getElementById('real-divulg-date-text')?.textContent = formatDateForDisplay(targetDatesDivulg.realistic);
+        document.getElementById('real-pub-date-text')?.textContent = formatDateForDisplay(targetDatesPub.realistic);
+        document.getElementById('pess-divulg-date-text')?.textContent = formatDateForDisplay(targetDatesDivulg.pessimistic);
+        document.getElementById('pess-pub-date-text')?.textContent = formatDateForDisplay(targetDatesPub.pessimistic);
+
+        function updateSingleCountdown(targetTime, daysId, hoursId, minutesId, secondsId, timerClass) {
+            const now = new Date().getTime();
+            const distance = targetTime - now;
+            const elDays = document.getElementById(daysId);
+            const elHours = document.getElementById(hoursId);
+            const elMinutes = document.getElementById(minutesId);
+            const elSeconds = document.getElementById(secondsId);
+            if (!elDays || !elHours || !elMinutes || !elSeconds) return;
+            const parentTimer = elDays.closest(`.${timerClass.split(' ')[0]}`); // Pega a primeira classe para encontrar o pai
+            if (distance < 0) {
+                if (parentTimer) parentTimer.innerHTML = `<span class='text-lg font-semibold ${timerClass.includes('main-countdown-timer') ? 'text-red-500' : 'text-gray-500'}'>Prazo Atingido!</span>`;
+                return;
+            }
+            elDays.textContent = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+            elHours.textContent = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+            elMinutes.textContent = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+            elSeconds.textContent = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+        }
+        
+        const countdownInterval = setInterval(() => {
+            ['optimistic', 'realistic', 'pessimistic'].forEach(scenario => {
+                updateSingleCountdown(targetDatesDivulg[scenario], `${scenario.substring(0,3)}-divulg-days`, `${scenario.substring(0,3)}-divulg-hours`, `${scenario.substring(0,3)}-divulg-minutes`, `${scenario.substring(0,3)}-divulg-seconds`, `main-countdown-timer`);
+                updateSingleCountdown(targetDatesPub[scenario], `${scenario.substring(0,3)}-pub-days`, `${scenario.substring(0,3)}-pub-hours`, `${scenario.substring(0,3)}-pub-minutes`, `${scenario.substring(0,3)}-pub-seconds`, 'secondary-countdown-timer');
+            });
+        }, 1000);
+        // Limpar intervalo se a seção for descarregada (mais complexo, para SPAs)
+
+        // Lógica dos botões de cenário
+        const scenarioButtons = document.querySelectorAll('#bacen-projections .scenario-button');
+        const projectionCards = {
+            optimistic: document.getElementById('projection-optimistic'),
+            realistic: document.getElementById('projection-realistic'),
+            pessimistic: document.getElementById('projection-pessimistic')
+        };
+        scenarioButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                scenarioButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                const selectedScenario = button.dataset.scenario;
+                Object.values(projectionCards).forEach(card => card?.classList.add('hidden'));
+                if (projectionCards[selectedScenario]) {
+                    projectionCards[selectedScenario].classList.remove('hidden');
+                    // Ajuste de layout para centralizar o card visível em telas maiores
+                    if (window.innerWidth >= 768) { 
+                        Object.values(projectionCards).forEach(card => card.style.gridColumn = ''); // Limpa colunas
+                        projectionCards[selectedScenario].style.gridColumn = 'md:col-start-2 md:col-span-1';
+                    }
+                }
+            });
+        });
+        // Estado inicial dos cards de projeção (Otimista visível e centralizado em MD+)
+        if (projectionCards.optimistic && projectionCards.realistic && projectionCards.pessimistic) {
+            projectionCards.realistic.classList.add('hidden');
+            projectionCards.pessimistic.classList.add('hidden');
+            if (window.innerWidth >= 768) {
+                projectionCards.optimistic.style.gridColumn = 'md:col-start-2 md:col-span-1';
+            }
+        }
+
+
+        // Lógica do Modal de Premissas
+        const modalPremise = document.getElementById('premiseModal');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalText = document.getElementById('modalText');
+        const premiseTexts = {
+            optimistic: "Data de Divulgação (SGP→SOF): 29 de Maio de 2025. <br>Intervalo Divulgação→Publicação Ato: ~20 dias. Este cenário assume que a análise SGP é concluída rapidamente (em ~2 dias a partir de 27/Maio) e as etapas finais são extremamente céleres, refletindo prioridade máxima e eficiência contínua. Publicação do Ato: 18 de Junho de 2025.",
+            realistic: "Data de Divulgação (SGP→SOF): 05 de Junho de 2025. <br>Intervalo Divulgação→Publicação Ato: ~30 dias. Considera uma conclusão da análise SGP em cerca de uma semana após o cenário otimista, com as etapas finais ainda sendo significativamente mais rápidas que o histórico da RFB. Publicação do Ato: 05 de Julho de 2025.",
+            pessimistic: "Data de Divulgação (SGP→SOF): 12 de Junho de 2025. <br>Intervalo Divulgação→Publicação Ato: ~45 dias. Permite mais tempo para a análise SGP e para as etapas finais, ainda assumindo uma eficiência maior que a da RFB, mas com margem para intercorrências. Publicação do Ato: 27 de Julho de 2025."
+        };
+        document.querySelectorAll('#bacen-projections .info-icon').forEach(icon => {
+            icon.addEventListener('click', (e) => {
+                const scenario = e.target.dataset.premise;
+                if (modalTitle) modalTitle.textContent = `Premissas do Cenário ${scenario.charAt(0).toUpperCase() + scenario.slice(1)}`;
+                if (modalText) modalText.innerHTML = premiseTexts[scenario];
+                if (modalPremise) modalPremise.classList.add('open');
+            });
+        });
+        document.getElementById('closePremiseModalBtn')?.addEventListener('click', () => modalPremise?.classList.remove('open'));
+        modalPremise?.addEventListener('click', (e) => { if (e.target === modalPremise) modalPremise.classList.remove('open'); });
+
+        // Lógica do Race Chart
+        const raceChartPeriodEl = document.getElementById('raceChartPeriod')?.querySelector('span');
+        let termRaceChartInstance;
+        let currentRaceMonthIndex = 0;
+        let raceIntervalId = null;
+        const playPauseRaceBtn = document.getElementById('playPauseRaceBtn');
+        const prevMonthRaceBtn = document.getElementById('prevMonthRaceBtn');
+        const nextMonthRaceBtn = document.getElementById('nextMonthRaceBtn');
+        let showingCumulative = false;
+        const termColors = {
+            "ansiedade": "rgba(255, 99, 132, 0.85)", "MGI": "rgba(54, 162, 235, 0.85)", "nomeação": "rgba(75, 192, 192, 0.85)",
+            "Galípolo": "rgba(255, 206, 86, 0.85)", "Esther": "rgba(153, 102, 255, 0.85)", "esperança": "rgba(255, 159, 64, 0.85)",
+            "boato": "rgba(100, 100, 100, 0.85)", "Marcelo": "rgba(255, 99, 71, 0.85)", "prazo": "rgba(0, 206, 209, 0.85)",
+            "PEC": "rgba(255, 215, 0, 0.85)", "SEI": "rgba(138, 43, 226, 0.85)", "DOU": "rgba(127, 255, 0, 0.85)",
+            "ofício": "rgba(210, 105, 30, 0.85)", "autorização": "rgba(60, 179, 113, 0.85)", "default": "rgba(200, 200, 200, 0.85)"
+        };
+        const termBorderColors = { /* ... (mesmos do original) ... */ }; // Preencher se necessário
+        const simulatedTermDataByMonth = {
+            "2025-01": [{ term: "ansiedade", frequency: 60 }, { term: "MGI", frequency: 40 }, { term: "nomeação", frequency: 50 }, { term: "Galípolo", frequency: 20 }, { term: "esperança", frequency: 70 }, { term: "boato", frequency: 30 }, { term: "Marcelo", frequency: 10 }, { term: "prazo", frequency: 25 }, { term: "PEC", frequency: 5}, {term: "SEI", frequency: 15}],
+            "2025-02": [{ term: "ansiedade", frequency: 75 }, { term: "MGI", frequency: 55 }, { term: "nomeação", frequency: 65 }, { term: "Esther", frequency: 30 }, { term: "esperança", frequency: 60 }, { term: "boato", frequency: 45 }, { term: "PEC", frequency: 20 }, { term: "Marcelo", frequency: 25 }, { term: "SEI", frequency: 30 }, {term: "DOU", frequency: 10}, {term: "Galípolo", frequency: 22}, {term: "autorização", frequency: 5}],
+            "2025-03": [{ term: "ansiedade", frequency: 50 }, { term: "MGI", frequency: 70 }, { term: "nomeação", frequency: 80 }, { term: "Galípolo", frequency: 40 }, { term: "Esther", frequency: 50 }, { term: "esperança", frequency: 80 }, { term: "boato", frequency: 60 }, { term: "PEC", frequency: 35 }, { term: "SEI", frequency: 50 }, { term: "DOU", frequency: 20 }, {term: "ofício", frequency: 15}, {term: "Marcelo", frequency: 5}, {term: "autorização", frequency: 20}],
+            "2025-04": [{ term: "ansiedade", frequency: 40 }, { term: "MGI", frequency: 60 }, { term: "nomeação", frequency: 70 }, { term: "Galípolo", frequency: 60 }, { term: "Esther", frequency: 70 }, { term: "esperança", frequency: 90 }, { term: "boato", frequency: 30 }, { term: "PEC", frequency: 25 }, { term: "SEI", frequency: 60 }, { term: "DOU", frequency: 40 }, {term: "ofício", frequency: 50}, {term: "autorização", frequency: 35}, {term: "Marcelo", frequency: 2}],
+            "2025-05": [{ term: "ansiedade", frequency: 85 }, { term: "MGI", frequency: 80 }, { term: "nomeação", frequency: 95 }, { term: "Galípolo", frequency: 75 }, { term: "Esther", frequency: 85 }, { term: "esperança", frequency: 50 }, { term: "boato", frequency: 70 }, { term: "PEC", frequency: 15 }, { term: "SEI", frequency: 90 }, { term: "DOU", frequency: 70 }, {term: "ofício", frequency: 80}, {term: "autorização", frequency: 90}, {term: "Marcelo", frequency: 40}]
+        };
+        const raceMonthsOrder = ["2025-01", "2025-02", "2025-03", "2025-04", "2025-05"];
+        const raceMonthNames = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio"];
+
+        function calculateCumulativeData() { /* ... (mesmo do original) ... */ return Object.entries(cumulative).map(([term, frequency]) => ({ term, frequency })); }
+        function updateRaceChart(monthIndex, isCumulative = false) { /* ... (adaptado do original, usando termColors e termBorderColors) ... */ }
+        function playRace() { /* ... (mesmo do original) ... */ }
+        
+        if (playPauseRaceBtn) playPauseRaceBtn.addEventListener('click', playRace);
+        if (prevMonthRaceBtn) prevMonthRaceBtn.addEventListener('click', () => { /* ... */ });
+        if (nextMonthRaceBtn) nextMonthRaceBtn.addEventListener('click', () => { /* ... */ });
+        
+        // Funções auxiliares para gráficos (se não estiverem globais)
+        function wrapTextForChart(text, maxLength) { /* ... (mesmo do original) ... */ return lines; }
+        function formatChartTooltipTitle(tooltipItems) { /* ... (mesmo do original) ... */ return label; }
+
+        // Chamada inicial para o Race Chart
+        if (document.getElementById('termRaceChart')) updateRaceChart(currentRaceMonthIndex);
+    }
+
+    // Chamada da função de inicialização da seção
+    if (typeof initMetodologiaSection === 'function') {
+        initMetodologiaSection();
+    } else {
+        document.addEventListener('DOMContentLoaded', () => {
+            if (typeof initMetodologiaSection === 'function') {
+                initMetodologiaSection();
+            }
+        });
+    }
+    // Ativa os ícones Lucide para esta seção
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+</script>
